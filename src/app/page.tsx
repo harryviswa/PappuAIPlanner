@@ -11,7 +11,8 @@ import MultiCountryModal from '@/components/MultiCountryModal';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal, Layers, Info, DollarSign, Star } from "lucide-react";
+import TrendingDestinations from '@/components/TrendingDestinations';
+import { Terminal, Layers, Info, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function HomePage() {
@@ -99,8 +100,15 @@ export default function HomePage() {
   }, [allDestinations]);
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-      <DestinationForm onSubmit={handleFormSubmit} isLoading={isLoading} />
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 mb-12">
+        <div className="lg:flex-1 lg:max-w-3xl"> {/* Form takes up more space, limited max width */}
+          <DestinationForm onSubmit={handleFormSubmit} isLoading={isLoading} />
+        </div>
+        <aside className="lg:w-auto lg:flex-shrink-0"> {/* Trending destinations section */}
+          <TrendingDestinations />
+        </aside>
+      </div>
 
       {isLoading && (
         <div className="text-center py-10">
@@ -109,67 +117,70 @@ export default function HomePage() {
         </div>
       )}
 
-      {error && (
-         <Alert variant="destructive" className="max-w-2xl mx-auto">
+      {error && !isLoading && (
+         <Alert variant="destructive" className="max-w-2xl mx-auto mt-8">
            <Terminal className="h-4 w-4" />
            <AlertTitle>Search Error</AlertTitle>
            <AlertDescription>{error}</AlertDescription>
          </Alert>
       )}
-
-      {!isLoading && !error && allDestinations.length > 0 && (
-        <>
-          <section className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-              <h2 className="text-3xl font-semibold text-center sm:text-left">Suggested Destinations</h2>
-              <div className="flex flex-col sm:flex-row items-center gap-2">
-                {primarySuggestions.length > 1 && ( // Only show if there are multiple primary suggestions to combine
-                  <Button onClick={handleOpenMultiCountryModal} variant="outline">
-                    <Layers className="mr-2 h-4 w-4" />
-                    Plan Multi-Country Trip
-                  </Button>
-                )}
-              </div>
-            </div>
-            {disclaimer && (
-              <Alert className="bg-accent/10 border-accent/30 text-accent-foreground max-w-3xl mx-auto">
-                <Info className="h-4 w-4 text-accent" />
-                <AlertTitle>Please Note</AlertTitle>
-                <AlertDescription>{disclaimer}</AlertDescription>
-              </Alert>
-            )}
-            {primarySuggestions.length > 0 ? (
-              <DestinationList 
-                destinations={primarySuggestions} 
-                onViewItinerary={handleViewItinerary}
-                travelDates={formTravelDates}
-                numberOfTravelers={formNumberOfTravelers}
-              />
-            ) : (
-              <p className="text-center text-muted-foreground">No primary destinations matched your criteria.</p>
-            )}
-          </section>
-
-          {premiumSuggestions.length > 0 && (
-            <section className="space-y-6 pt-8 mt-8 border-t">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h2 className="text-3xl font-semibold text-center sm:text-left flex items-center gap-2">
-                  <Star className="h-7 w-7 text-yellow-500" /> {/* Changed to yellow-500 for better visibility with new theme */}
-                  Premium & Splurge Options
-                </h2>
-              </div>
-              <DestinationList 
-                destinations={premiumSuggestions} 
-                onViewItinerary={handleViewItinerary}
-                travelDates={formTravelDates}
-                numberOfTravelers={formNumberOfTravelers}
-              />
-            </section>
-          )}
-        </>
-      )}
       
-      {!isLoading && !error && allDestinations.length === 0 && formTravelDates && ( /* formTravelDates ensures this shows only after a search */
+      <div className="space-y-12"> {/* Wrapper for results to give them space from form/trending */}
+        {!isLoading && !error && allDestinations.length > 0 && (
+          <>
+            <section className="space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h2 className="text-3xl font-semibold text-center sm:text-left">Suggested Destinations</h2>
+                <div className="flex flex-col sm:flex-row items-center gap-2">
+                  {primarySuggestions.length > 1 && ( 
+                    <Button onClick={handleOpenMultiCountryModal} variant="outline">
+                      <Layers className="mr-2 h-4 w-4" />
+                      Plan Multi-Country Trip
+                    </Button>
+                  )}
+                </div>
+              </div>
+              {disclaimer && (
+                <Alert className="bg-accent/10 border-accent/30 text-accent-foreground max-w-3xl mx-auto">
+                  <Info className="h-4 w-4 text-accent" />
+                  <AlertTitle>Please Note</AlertTitle>
+                  <AlertDescription>{disclaimer}</AlertDescription>
+                </Alert>
+              )}
+              {primarySuggestions.length > 0 ? (
+                <DestinationList 
+                  destinations={primarySuggestions} 
+                  onViewItinerary={handleViewItinerary}
+                  travelDates={formTravelDates}
+                  numberOfTravelers={formNumberOfTravelers}
+                />
+              ) : (
+                !premiumSuggestions.length && // Only show this if there are no premium suggestions either
+                <p className="text-center text-muted-foreground">No primary destinations matched your criteria.</p>
+              )}
+            </section>
+
+            {premiumSuggestions.length > 0 && (
+              <section className="space-y-6 pt-8 mt-8 border-t">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                  <h2 className="text-3xl font-semibold text-center sm:text-left flex items-center gap-2">
+                    <Star className="h-7 w-7 text-yellow-500" /> 
+                    Premium & Splurge Options
+                  </h2>
+                </div>
+                <DestinationList 
+                  destinations={premiumSuggestions} 
+                  onViewItinerary={handleViewItinerary}
+                  travelDates={formTravelDates}
+                  numberOfTravelers={formNumberOfTravelers}
+                />
+              </section>
+            )}
+          </>
+        )}
+      </div>
+      
+      {!isLoading && !error && allDestinations.length === 0 && formTravelDates && ( 
         <p className="text-center text-xl text-muted-foreground py-10">No destinations matched your criteria. Please try different options.</p>
       )}
 

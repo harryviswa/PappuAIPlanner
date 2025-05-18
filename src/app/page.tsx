@@ -36,7 +36,7 @@ export default function HomePage() {
     setError(null);
     setSuggestedDestinations([]);
     setDisclaimer(null);
-    setFormTravelDates(data.travelDates); // Store for itinerary modal context
+    setFormTravelDates(data.travelDates); // Store for itinerary modal context and passing to list
 
     try {
       // Type assertion if the AI flow output matches our expected structure
@@ -121,7 +121,11 @@ export default function HomePage() {
               <AlertDescription>{disclaimer}</AlertDescription>
             </Alert>
           )}
-          <DestinationList destinations={suggestedDestinations} onViewItinerary={handleViewItinerary} />
+          <DestinationList 
+            destinations={suggestedDestinations} 
+            onViewItinerary={handleViewItinerary}
+            travelDates={formTravelDates} 
+          />
         </section>
       )}
       

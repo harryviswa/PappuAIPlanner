@@ -6,17 +6,15 @@ import DestinationCard from './DestinationCard';
 interface DestinationListProps {
   destinations: Destination[];
   onViewItinerary: (destination: Destination) => void;
+  travelDates?: string; // "YYYY-MM-DD to YYYY-MM-DD"
 }
 
-export default function DestinationList({ destinations, onViewItinerary }: DestinationListProps) {
+export default function DestinationList({ destinations, onViewItinerary, travelDates }: DestinationListProps) {
   if (destinations.length === 0) {
     return <p className="text-center text-muted-foreground">No destinations found. Try adjusting your search criteria.</p>;
   }
 
   // Sort by average flight price in ascending order (cheapest first)
-  // The prompt asked for "descending order of flight ticket price" but also "lowest flight ticket prices", 
-  // typically users want to see cheapest first. If most expensive first is truly desired, change `a.averageFlightPrice - b.averageFlightPrice` to `b.averageFlightPrice - a.averageFlightPrice`.
-  // Based on "lowest flight ticket prices", sorting ascending.
   const sortedDestinations = [...destinations].sort((a, b) => a.averageFlightPrice - b.averageFlightPrice);
 
 
@@ -27,6 +25,7 @@ export default function DestinationList({ destinations, onViewItinerary }: Desti
           key={dest.country}
           destination={dest}
           onViewItinerary={onViewItinerary}
+          travelDates={travelDates}
         />
       ))}
     </div>

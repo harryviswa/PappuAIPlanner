@@ -63,7 +63,7 @@ export default function DestinationCard({
 
   const hasDetailedExpenses = destination.detailedExpenses && Object.values(destination.detailedExpenses).some(val => val !== undefined && val > 0);
 
-  const totalTripCost = destination.averageFlightPrice + destination.estimatedExpenses;
+  const totalTripCost = destination.averageFlightPrice * (numberOfTravelers || 1) + destination.estimatedExpenses;
 
   return (
     <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col md:flex-row h-full w-full">

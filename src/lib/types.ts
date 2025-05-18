@@ -15,6 +15,7 @@ export interface Destination {
   visaRequirements: string;
   itinerary: string; // This is the basic itinerary from suggestDestinations
   detailedExpenses?: DetailedExpenses;
+  isPremiumOption?: boolean;
 }
 
 export interface SuggestedDestinationsOutput {
@@ -29,4 +30,3 @@ export interface SuggestDestinationsFormInput {
   budget: number;
   numberOfTravelers: number;
 }
-

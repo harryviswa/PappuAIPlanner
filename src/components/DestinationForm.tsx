@@ -75,7 +75,7 @@ export default function DestinationForm({ onSubmit, isLoading }: DestinationForm
       },
       nationality: '',
       budget: 1000,
-      numberOfTravelers: 1,
+      numberOfTravelers: 2, // Default to 2 travelers
     },
   });
 
@@ -185,7 +185,7 @@ export default function DestinationForm({ onSubmit, isLoading }: DestinationForm
                   <FormItem>
                     <FormLabel className="flex items-center gap-1"><DollarSign className="h-4 w-4 text-muted-foreground"/>Budget (USD)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="e.g., 2000" {...field} />
+                      <Input type="number" placeholder="e.g., 2000" {...field} step="500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -229,4 +229,3 @@ export default function DestinationForm({ onSubmit, isLoading }: DestinationForm
     </Card>
   );
 }
-

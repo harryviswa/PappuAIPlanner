@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -10,11 +11,11 @@ import MultiCountryModal from '@/components/MultiCountryModal';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal, Layers, Info, DollarSign } from "lucide-react";
+import { Terminal, Layers, Info, DollarSign, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function HomePage() {
-  const [suggestedDestinations, setSuggestedDestinations] = useState<Destination[]>([]);
+  const [allDestinations, setAllDestinations] = useState<Destination[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [disclaimer, setDisclaimer] = useState<string | null>(null);
@@ -30,14 +31,14 @@ export default function HomePage() {
   const handleFormSubmit = async (data: SuggestDestinationsFormInput) => {
     setIsLoading(true);
     setError(null);
-    setSuggestedDestinations([]);
+    setAllDestinations([]);
     setDisclaimer(null);
     setFormTravelDates(data.travelDates); 
 
     try {
       const result = await suggestDestinations(data) as AISuggestedDestinationsOutput; 
       if (result && result.destinations) {
-        setSuggestedDestinations(result.destinations);
+        setAllDestinations(result.destinations);
         if (result.disclaimer) {
           setDisclaimer(result.disclaimer);
         }
@@ -79,9 +80,25 @@ export default function HomePage() {
     setIsMultiCountryModalOpen(true);
   };
 
+  const { primarySuggestions, premiumSuggestions } = useMemo(() => {
+    const primary: Destination[] = [];
+    const premium: Destination[] = [];
+    allDestinations.forEach(dest => {
+      if (dest.isPremiumOption) {
+        premium.push(dest);
+      } else {
+        primary.push(dest);
+      }
+    });
+    // Sort primary by flight price, premium by flight price
+    primary.sort((a,b) => a.averageFlightPrice - b.averageFlightPrice);
+    premium.sort((a,b) => a.averageFlightPrice - b.averageFlightPrice);
+    return { primarySuggestions: primary, premiumSuggestions: premium };
+  }, [allDestinations]);
+
   const totalExpensesForAllSuggestions = useMemo(() => {
-    return suggestedDestinations.reduce((sum, dest) => sum + dest.estimatedExpenses, 0);
-  }, [suggestedDestinations]);
+    return allDestinations.reduce((sum, dest) => sum + dest.estimatedExpenses, 0);
+  }, [allDestinations]);
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
@@ -102,42 +119,64 @@ export default function HomePage() {
          </Alert>
       )}
 
-      {!isLoading && !error && suggestedDestinations.length > 0 && (
-        <section className="space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <h2 className="text-3xl font-semibold text-center sm:text-left">Suggested Destinations</h2>
-            <div className="flex flex-col sm:flex-row items-center gap-2">
-              {suggestedDestinations.length > 0 && (
-                <div className="text-sm text-muted-foreground flex items-center gap-1 p-2 border rounded-md bg-secondary/50">
-                  <DollarSign className="h-4 w-4 text-primary"/>
-                  <span>Total Est. Expenses (All): </span>
-                  <span className="font-bold text-primary">${totalExpensesForAllSuggestions.toLocaleString()}</span>
-                </div>
-              )}
-              {suggestedDestinations.length > 1 && (
-                <Button onClick={handleOpenMultiCountryModal} variant="outline">
-                  <Layers className="mr-2 h-4 w-4" />
-                  Plan Multi-Country Trip
-                </Button>
-              )}
+      {!isLoading && !error && allDestinations.length > 0 && (
+        <>
+          <section className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <h2 className="text-3xl font-semibold text-center sm:text-left">Suggested Destinations</h2>
+              <div className="flex flex-col sm:flex-row items-center gap-2">
+                {allDestinations.length > 0 && (
+                  <div className="text-sm text-muted-foreground flex items-center gap-1 p-2 border rounded-md bg-secondary/50">
+                    <DollarSign className="h-4 w-4 text-primary"/>
+                    <span>Total Est. Expenses (All): </span>
+                    <span className="font-bold text-primary">${totalExpensesForAllSuggestions.toLocaleString()}</span>
+                  </div>
+                )}
+                {primarySuggestions.length > 1 && ( // Only show if there are multiple primary suggestions to combine
+                  <Button onClick={handleOpenMultiCountryModal} variant="outline">
+                    <Layers className="mr-2 h-4 w-4" />
+                    Plan Multi-Country Trip
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-          {disclaimer && (
-            <Alert className="bg-accent/10 border-accent/30 text-accent-foreground max-w-3xl mx-auto">
-              <Info className="h-4 w-4 text-accent" />
-              <AlertTitle>Please Note</AlertTitle>
-              <AlertDescription>{disclaimer}</AlertDescription>
-            </Alert>
+            {disclaimer && (
+              <Alert className="bg-accent/10 border-accent/30 text-accent-foreground max-w-3xl mx-auto">
+                <Info className="h-4 w-4 text-accent" />
+                <AlertTitle>Please Note</AlertTitle>
+                <AlertDescription>{disclaimer}</AlertDescription>
+              </Alert>
+            )}
+            {primarySuggestions.length > 0 ? (
+              <DestinationList 
+                destinations={primarySuggestions} 
+                onViewItinerary={handleViewItinerary}
+                travelDates={formTravelDates} 
+              />
+            ) : (
+              <p className="text-center text-muted-foreground">No primary destinations matched your criteria.</p>
+            )}
+          </section>
+
+          {premiumSuggestions.length > 0 && (
+            <section className="space-y-6 pt-8 mt-8 border-t">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h2 className="text-3xl font-semibold text-center sm:text-left flex items-center gap-2">
+                  <Star className="h-7 w-7 text-amber-500" />
+                  Premium & Splurge Options
+                </h2>
+              </div>
+              <DestinationList 
+                destinations={premiumSuggestions} 
+                onViewItinerary={handleViewItinerary}
+                travelDates={formTravelDates} 
+              />
+            </section>
           )}
-          <DestinationList 
-            destinations={suggestedDestinations} 
-            onViewItinerary={handleViewItinerary}
-            travelDates={formTravelDates} 
-          />
-        </section>
+        </>
       )}
       
-      {!isLoading && !error && suggestedDestinations.length === 0 && formTravelDates && (
+      {!isLoading && !error && allDestinations.length === 0 && formTravelDates && (
         <p className="text-center text-xl text-muted-foreground py-10">No destinations matched your criteria. Please try different options.</p>
       )}
 
@@ -148,11 +187,11 @@ export default function HomePage() {
         travelDates={formTravelDates}
       />
 
-      {suggestedDestinations.length > 0 && (
+      {allDestinations.length > 0 && ( // Pass all destinations to multi-country, it will sort/filter internally if needed
         <MultiCountryModal
           isOpen={isMultiCountryModalOpen}
           onClose={() => setIsMultiCountryModalOpen(false)}
-          allSuggestedDestinations={suggestedDestinations}
+          allSuggestedDestinations={allDestinations} 
           travelDates={formTravelDates}
         />
       )}

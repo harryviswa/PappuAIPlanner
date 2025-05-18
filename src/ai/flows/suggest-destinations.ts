@@ -41,6 +41,7 @@ const DestinationSchema = z.object({
     .describe('Visa requirements for the nationality.'),
   itinerary: z.string().describe('Recommended day-by-day itinerary in Markdown format (headings for days, bullet points for activities).'),
   detailedExpenses: DetailedExpensesSchema.optional().describe('Optional: Detailed breakdown of estimated expenses.'),
+  isPremiumOption: z.boolean().optional().describe('Indicates if this suggestion is a premium/higher-budget option (approx. 25-50% above stated budget).'),
 });
 
 const SuggestDestinationsOutputSchema = z.object({
@@ -66,16 +67,23 @@ Nationality: {{{nationality}}}
 Budget: {{{budget}}} USD
 Number of Travelers: {{{numberOfTravelers}}}
 
-Consider visa requirements for the traveler's nationality. Return destinations with the lowest possible flight tickets in descending order.
+Consider visa requirements for the traveler's nationality. Return primary destinations within or very close to the budget, with the lowest possible flight tickets, sorted by flight price (ascending).
 For each destination:
 1. Provide a 'country' name.
 2. Provide 'averageFlightPrice' in USD (numeric).
 3. Provide 'estimatedExpenses' which is the total estimated cost for the trip in USD (numeric).
 4. Provide 'visaRequirements' as a string.
 5. Create a recommended day-by-day 'itinerary' in Markdown format (headings for days, bullet points for activities) based on the travel dates given.
-6. If possible, provide a 'detailedExpenses' object with numeric estimates in USD for 'food', 'stay' (accommodation), 'sightseeing', 'shopping', and 'transport' (local). If a specific category isn't applicable or calculable, it can be omitted or set to 0 within the detailedExpenses object. If no breakdown is possible, the detailedExpenses field itself can be omitted.
-   **Important**: Ensure the 'estimatedExpenses' value accurately reflects the sum of all components in 'detailedExpenses' if the breakdown is provided. If they cannot be perfectly aligned, prioritize the accuracy of 'estimatedExpenses' as the overall trip cost.
-7. Provide a brief 'disclaimer' if estimations are highly variable or based on limited data (e.g., "Flight and accommodation prices are highly dynamic. Please check current rates.").
+6. If possible, provide a 'detailedExpenses' object with numeric estimates in USD for 'food', 'stay' (accommodation), 'sightseeing', 'shopping', and 'transport' (local). If a specific category isn't applicable or calculable, it can be omitted or set to 0 within the detailedExpenses object.
+   **VERY IMPORTANT**: Ensure the 'estimatedExpenses' value accurately reflects the sum of all components in 'detailedExpenses' if the breakdown is provided. If they cannot be perfectly aligned, prioritize the accuracy of 'estimatedExpenses' as the overall trip cost, and if a breakdown is provided, make sure its sum matches 'estimatedExpenses'.
+7. Set 'isPremiumOption' to false for these primary suggestions.
+
+Additionally, provide 1-2 'Premium' or 'Splurge' destination options. These should be for travelers willing to spend roughly 25-50% more than their stated 'budget' for a significantly enhanced experience or luxury. For these premium options:
+- Follow points 1-6 above.
+- Set 'isPremiumOption' to true.
+- These premium options should be listed AFTER the primary suggestions.
+
+If estimations are highly variable or based on limited data (e.g., flight and accommodation prices are highly dynamic), provide a brief 'disclaimer' string.
 
 Format output as JSON.`,
 });
@@ -91,4 +99,3 @@ const suggestDestinationsFlow = ai.defineFlow(
     return output!;
   }
 );
-

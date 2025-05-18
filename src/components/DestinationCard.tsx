@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { MapPin, Plane, CreditCard, ListChecks, CheckSquare, XSquare, Ticket, Info, Utensils, BedDouble, Camera, ShoppingBag, CarFront } from 'lucide-react';
+import { MapPin, Plane, CreditCard, ListChecks, CheckSquare, XSquare, Ticket, Info, Utensils, BedDouble, Camera, ShoppingBag, CarFront, Star } from 'lucide-react';
 import Image from 'next/image';
 
 interface DestinationCardProps {
@@ -30,13 +30,16 @@ export default function DestinationCard({
                            !destination.visaRequirements.toLowerCase().includes('not required');
 
   const getGoogleFlightsUrl = () => {
+    // Base URL for searching flights to a destination
     let url = `https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(destination.country)}`;
+    
     if (travelDates) {
       const dates = travelDates.split(' to ');
       if (dates.length === 2) {
         const departureDate = dates[0]; // Should be YYYY-MM-DD
         const returnDate = dates[1];   // Should be YYYY-MM-DD
-        url += `&hl=en&curr=USD&gl=us&departure_date=${departureDate}&arrival_date=${returnDate}`;
+        // Add date parameters. Google Flights uses dep_date and ret_date
+        url += `&hl=en&curr=USD&dep_date=${departureDate}&ret_date=${returnDate}`;
       }
     }
     return url;
@@ -56,6 +59,11 @@ export default function DestinationCard({
           objectFit="cover"
           data-ai-hint={`travel landmark ${destination.country.toLowerCase()}`}
         />
+         {destination.isPremiumOption && (
+          <Badge variant="destructive" className="absolute top-2 right-2 text-sm px-3 py-1 flex items-center gap-1 z-10 bg-amber-500 text-white border-amber-600">
+            <Star className="h-4 w-4" /> Premium
+          </Badge>
+        )}
       </div>
       <div className="w-full md:w-2/3 flex flex-col">
         <CardHeader className="pb-3">
@@ -79,7 +87,7 @@ export default function DestinationCard({
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-1 text-muted-foreground"><Plane className="h-4 w-4" /> Avg. Flight:</span>
             <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-base font-semibold px-2.5 py-1">
+              <Badge variant="secondary" className="text-lg font-semibold px-3 py-1">
                 ${destination.averageFlightPrice.toLocaleString()}
               </Badge>
               <Button asChild variant="outline" size="sm" className="h-auto px-2 py-1 text-xs">
@@ -97,58 +105,67 @@ export default function DestinationCard({
                   <CreditCard className="h-4 w-4" /> Est. Expenses:
                 </span>
                 <div className="flex items-center gap-1">
-                  <Badge variant="secondary" className="text-base font-semibold px-2.5 py-1">
+                  <Badge variant="secondary" className="text-lg font-semibold px-3 py-1">
                     ${destination.estimatedExpenses.toLocaleString()}
                   </Badge>
                   {hasDetailedExpenses && <Info className="h-3 w-3 text-primary" />}
                 </div>
               </Button>
             </PopoverTrigger>
-            {hasDetailedExpenses && (
+            {hasDetailedExpenses && destination.detailedExpenses && (
               <PopoverContent className="w-80 z-50">
                 <div className="grid gap-4">
                   <div className="space-y-1">
                     <h4 className="font-medium leading-none text-base">Expense Breakdown</h4>
                     <p className="text-xs text-muted-foreground">
-                      Estimated costs for your trip (USD). Total: ${destination.estimatedExpenses.toLocaleString()}
+                      Total Est: ${destination.estimatedExpenses.toLocaleString()} (USD)
                     </p>
                   </div>
-                  {destination.detailedExpenses ? (
-                    <div className="grid gap-2 text-xs">
-                      {destination.detailedExpenses.food !== undefined && destination.detailedExpenses.food > 0 && (
-                        <div className="grid grid-cols-2 items-center gap-2">
-                          <span className="flex items-center"><Utensils className="mr-2 h-4 w-4 text-muted-foreground" /> Food:</span>
-                          <span className="text-right font-semibold">${destination.detailedExpenses.food.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {destination.detailedExpenses.stay !== undefined && destination.detailedExpenses.stay > 0 && (
-                        <div className="grid grid-cols-2 items-center gap-2">
-                          <span className="flex items-center"><BedDouble className="mr-2 h-4 w-4 text-muted-foreground" /> Stay:</span>
-                          <span className="text-right font-semibold">${destination.detailedExpenses.stay.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {destination.detailedExpenses.sightseeing !== undefined && destination.detailedExpenses.sightseeing > 0 && (
-                        <div className="grid grid-cols-2 items-center gap-2">
-                          <span className="flex items-center"><Camera className="mr-2 h-4 w-4 text-muted-foreground" /> Sightseeing:</span>
-                          <span className="text-right font-semibold">${destination.detailedExpenses.sightseeing.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {destination.detailedExpenses.shopping !== undefined && destination.detailedExpenses.shopping > 0 && (
-                        <div className="grid grid-cols-2 items-center gap-2">
-                          <span className="flex items-center"><ShoppingBag className="mr-2 h-4 w-4 text-muted-foreground" /> Shopping:</span>
-                          <span className="text-right font-semibold">${destination.detailedExpenses.shopping.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {destination.detailedExpenses.transport !== undefined && destination.detailedExpenses.transport > 0 && (
-                        <div className="grid grid-cols-2 items-center gap-2">
-                          <span className="flex items-center"><CarFront className="mr-2 h-4 w-4 text-muted-foreground" /> Transport:</span>
-                          <span className="text-right font-semibold">${destination.detailedExpenses.transport.toLocaleString()}</span>
-                        </div>
-                      )}
+                  <div className="grid gap-2 text-xs">
+                    {destination.detailedExpenses.food !== undefined && destination.detailedExpenses.food > 0 && (
+                      <div className="grid grid-cols-2 items-center gap-2">
+                        <span className="flex items-center"><Utensils className="mr-2 h-4 w-4 text-muted-foreground" /> Food:</span>
+                        <span className="text-right font-semibold">${destination.detailedExpenses.food.toLocaleString()}</span>
+                      </div>
+                    )}
+                    {destination.detailedExpenses.stay !== undefined && destination.detailedExpenses.stay > 0 && (
+                      <div className="grid grid-cols-2 items-center gap-2">
+                        <span className="flex items-center"><BedDouble className="mr-2 h-4 w-4 text-muted-foreground" /> Stay:</span>
+                        <span className="text-right font-semibold">${destination.detailedExpenses.stay.toLocaleString()}</span>
+                      </div>
+                    )}
+                    {destination.detailedExpenses.sightseeing !== undefined && destination.detailedExpenses.sightseeing > 0 && (
+                      <div className="grid grid-cols-2 items-center gap-2">
+                        <span className="flex items-center"><Camera className="mr-2 h-4 w-4 text-muted-foreground" /> Sightseeing:</span>
+                        <span className="text-right font-semibold">${destination.detailedExpenses.sightseeing.toLocaleString()}</span>
+                      </div>
+                    )}
+                    {destination.detailedExpenses.shopping !== undefined && destination.detailedExpenses.shopping > 0 && (
+                      <div className="grid grid-cols-2 items-center gap-2">
+                        <span className="flex items-center"><ShoppingBag className="mr-2 h-4 w-4 text-muted-foreground" /> Shopping:</span>
+                        <span className="text-right font-semibold">${destination.detailedExpenses.shopping.toLocaleString()}</span>
+                      </div>
+                    )}
+                    {destination.detailedExpenses.transport !== undefined && destination.detailedExpenses.transport > 0 && (
+                      <div className="grid grid-cols-2 items-center gap-2">
+                        <span className="flex items-center"><CarFront className="mr-2 h-4 w-4 text-muted-foreground" /> Transport:</span>
+                        <span className="text-right font-semibold">${destination.detailedExpenses.transport.toLocaleString()}</span>
+                      </div>
+                    )}
+                    <hr className="my-1"/>
+                    <div className="grid grid-cols-2 items-center gap-2 font-bold">
+                        <span className="flex items-center">Total of Breakdown:</span>
+                        <span className="text-right">
+                          ${(
+                            (destination.detailedExpenses.food || 0) +
+                            (destination.detailedExpenses.stay || 0) +
+                            (destination.detailedExpenses.sightseeing || 0) +
+                            (destination.detailedExpenses.shopping || 0) +
+                            (destination.detailedExpenses.transport || 0)
+                          ).toLocaleString()}
+                        </span>
                     </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">Detailed expense breakdown not available.</p>
-                  )}
+                  </div>
                 </div>
               </PopoverContent>
             )}

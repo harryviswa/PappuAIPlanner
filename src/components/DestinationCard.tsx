@@ -32,20 +32,35 @@ export default function DestinationCard({
                            !destination.visaRequirements.toLowerCase().includes('not required');
 
   const getGoogleFlightsUrl = () => {
-    let url = `https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(destination.country)}`;
+    const baseUrl = 'https://www.google.com/travel/flights/search';
+    const queryParams = new URLSearchParams();
     
+    let searchQuery = `flights to ${destination.country}`;
+
     if (travelDates) {
       const dates = travelDates.split(' to ');
       if (dates.length === 2) {
         const departureDate = dates[0]; // Should be YYYY-MM-DD
         const returnDate = dates[1];   // Should be YYYY-MM-DD
-        url += `&hl=en&curr=USD&dep_date=${departureDate}&ret_date=${returnDate}`;
+        // Ensure dates are valid before adding to query
+        if (departureDate && returnDate) {
+            searchQuery += ` from ${departureDate} to ${returnDate}`;
+        }
       }
     }
+
     if (numberOfTravelers && numberOfTravelers > 0) {
-      url += `&adults=${numberOfTravelers}`;
+      searchQuery += ` for ${numberOfTravelers} adult${numberOfTravelers > 1 ? 's' : ''}`;
     }
-    return url;
+    
+    queryParams.append('q', searchQuery);
+    
+    // It's good practice to also specify language and currency if possible,
+    // though Google often infers this.
+    queryParams.append('hl', 'en');
+    queryParams.append('curr', 'USD');
+
+    return `${baseUrl}?${queryParams.toString()}`;
   };
   
   const googleFlightsUrl = getGoogleFlightsUrl();
@@ -63,7 +78,7 @@ export default function DestinationCard({
           data-ai-hint={`travel landmark ${destination.country.toLowerCase()}`}
         />
          {destination.isPremiumOption && (
-          <Badge variant="default" className="absolute top-2 right-2 text-sm px-3 py-1 flex items-center gap-1 z-10 bg-primary text-primary-foreground border-primary/80"> {/* Adjusted for new theme */}
+          <Badge variant="default" className="absolute top-2 right-2 text-sm px-3 py-1 flex items-center gap-1 z-10 bg-primary text-primary-foreground border-primary/80">
             <Star className="h-4 w-4" /> Premium
           </Badge>
         )}

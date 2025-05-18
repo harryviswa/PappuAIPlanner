@@ -12,7 +12,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import TrendingDestinations from '@/components/TrendingDestinations';
-import { Terminal, Layers, Info, Star, Lightbulb } from "lucide-react";
+import { Terminal, Layers, Info, Star, Lightbulb, ShieldCheck, ShieldAlert } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { travelFacts } from '@/lib/travel-facts';
 
@@ -94,21 +94,34 @@ export default function HomePage() {
     setIsMultiCountryModalOpen(true);
   };
 
-  const { primarySuggestions, premiumSuggestions } = useMemo(() => {
-    const primary: Destination[] = [];
+  const { primaryVisaNotRequired, primaryVisaRequired, premiumSuggestions } = useMemo(() => {
+    const pVNR: Destination[] = [];
+    const pVR: Destination[] = [];
     const premium: Destination[] = [];
+
     allDestinations.forEach(dest => {
       if (dest.isPremiumOption) {
         premium.push(dest);
       } else {
-        primary.push(dest);
+        // Heuristic for visa: if "required" is in the string, or if "not required" is NOT in the string.
+        const visaRequirementText = dest.visaRequirements.toLowerCase();
+        const visaNeeded = visaRequirementText.includes('required') || 
+                           !visaRequirementText.includes('not required');
+        if (visaNeeded) {
+          pVR.push(dest);
+        } else {
+          pVNR.push(dest);
+        }
       }
     });
-    // Sort primary by flight price, premium by flight price
-    primary.sort((a,b) => a.averageFlightPrice - b.averageFlightPrice);
+    // Sort each list by flight price
+    pVNR.sort((a,b) => a.averageFlightPrice - b.averageFlightPrice);
+    pVR.sort((a,b) => a.averageFlightPrice - b.averageFlightPrice);
     premium.sort((a,b) => a.averageFlightPrice - b.averageFlightPrice);
-    return { primarySuggestions: primary, premiumSuggestions: premium };
+    return { primaryVisaNotRequired: pVNR, primaryVisaRequired: pVR, premiumSuggestions: premium };
   }, [allDestinations]);
+
+  const totalPrimarySuggestions = primaryVisaNotRequired.length + primaryVisaRequired.length;
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -147,37 +160,65 @@ export default function HomePage() {
       <div className="space-y-12">
         {!isLoading && !error && allDestinations.length > 0 && (
           <>
-            <section className="space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h2 className="text-3xl font-semibold text-center sm:text-left">Suggested Destinations</h2>
-                <div className="flex flex-col sm:flex-row items-center gap-2">
-                  {primarySuggestions.length > 1 && ( 
-                    <Button onClick={handleOpenMultiCountryModal} variant="outline">
-                      <Layers className="mr-2 h-4 w-4" />
-                      Plan Multi-Country Trip
-                    </Button>
-                  )}
-                </div>
-              </div>
-              {disclaimer && (
-                <Alert className="bg-accent/10 border-accent/30 text-accent-foreground max-w-3xl mx-auto">
-                  <Info className="h-4 w-4 text-accent" />
-                  <AlertTitle>Please Note</AlertTitle>
-                  <AlertDescription>{disclaimer}</AlertDescription>
-                </Alert>
-              )}
-              {primarySuggestions.length > 0 ? (
+            {disclaimer && (
+              <Alert className="bg-accent/10 border-accent/30 text-accent-foreground max-w-3xl mx-auto">
+                <Info className="h-4 w-4 text-accent" />
+                <AlertTitle>Please Note</AlertTitle>
+                <AlertDescription>{disclaimer}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+              <h2 className="text-3xl font-semibold text-center sm:text-left">Suggested Destinations</h2>
+                {totalPrimarySuggestions > 1 && ( 
+                  <Button onClick={handleOpenMultiCountryModal} variant="outline">
+                    <Layers className="mr-2 h-4 w-4" />
+                    Plan Multi-Country Trip
+                  </Button>
+                )}
+            </div>
+
+            {primaryVisaNotRequired.length > 0 && (
+              <section className="space-y-6">
+                <h3 className="text-2xl font-medium text-center sm:text-left flex items-center gap-2">
+                  <ShieldCheck className="h-6 w-6 text-green-600" />
+                  Visa Likely Not Required
+                </h3>
                 <DestinationList 
-                  destinations={primarySuggestions} 
+                  destinations={primaryVisaNotRequired} 
                   onViewItinerary={handleViewItinerary}
                   travelDates={formTravelDates}
                   numberOfTravelers={formNumberOfTravelers}
                 />
-              ) : (
-                !premiumSuggestions.length && 
-                <p className="text-center text-muted-foreground">No primary destinations matched your criteria.</p>
-              )}
-            </section>
+              </section>
+            )}
+
+            {primaryVisaRequired.length > 0 && (
+              <section className="space-y-6 pt-8 mt-8 border-t">
+                <h3 className="text-2xl font-medium text-center sm:text-left flex items-center gap-2">
+                  <ShieldAlert className="h-6 w-6 text-amber-600" />
+                  Visa Likely Required
+                </h3>
+                <Alert variant="default" className="bg-amber-50 border-amber-200 text-amber-700 max-w-3xl">
+                  <Info className="h-4 w-4 text-amber-600" />
+                  <AlertTitle>Verify Visa Information</AlertTitle>
+                  <AlertDescription>
+                    The visa information provided is based on AI suggestions and general knowledge. Always verify specific visa requirements with official government sources or consulates before making travel plans.
+                  </AlertDescription>
+                </Alert>
+                <DestinationList 
+                  destinations={primaryVisaRequired} 
+                  onViewItinerary={handleViewItinerary}
+                  travelDates={formTravelDates}
+                  numberOfTravelers={formNumberOfTravelers}
+                />
+              </section>
+            )}
+            
+            {(primaryVisaNotRequired.length === 0 && primaryVisaRequired.length === 0 && premiumSuggestions.length === 0 && allDestinations.length > 0) && (
+              !(premiumSuggestions.length > 0) && <p className="text-center text-muted-foreground">No primary destinations matched your criteria.</p>
+            )}
+
 
             {premiumSuggestions.length > 0 && (
               <section className="space-y-6 pt-8 mt-8 border-t">
@@ -210,6 +251,7 @@ export default function HomePage() {
         travelDates={formTravelDates}
       />
 
+      {/* Pass all destinations (primary + premium) to multi-country modal, as it allows mixing */}
       {allDestinations.length > 0 && ( 
         <MultiCountryModal
           isOpen={isMultiCountryModalOpen}

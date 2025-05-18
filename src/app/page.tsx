@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from 'react';
-import type { SuggestDestinationsFormInput, Destination, SuggestedDestinationsOutput as AISuggestedDestinationsOutput } from '@/lib/types'; // Assuming AISuggestedDestinationsOutput is the direct type from AI flow
-import { suggestDestinations } from '@/ai/flows/suggest-destinations'; // Assuming this is the correct path
+import { useState, useMemo } from 'react';
+import type { SuggestDestinationsFormInput, Destination, SuggestedDestinationsOutput as AISuggestedDestinationsOutput } from '@/lib/types';
+import { suggestDestinations } from '@/ai/flows/suggest-destinations';
 import DestinationForm from '@/components/DestinationForm';
 import DestinationList from '@/components/DestinationList';
 import ItineraryModal from '@/components/ItineraryModal';
@@ -10,11 +10,8 @@ import MultiCountryModal from '@/components/MultiCountryModal';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal, Layers } from "lucide-react";
+import { Terminal, Layers, Info, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-// Directly use the output type from the AI flow if it matches SuggestedDestinationsOutput
-// For this example, assuming AISuggestedDestinationsOutput is { destinations: Destination[], disclaimer?: string }
 
 export default function HomePage() {
   const [suggestedDestinations, setSuggestedDestinations] = useState<Destination[]>([]);
@@ -28,7 +25,6 @@ export default function HomePage() {
   const [isMultiCountryModalOpen, setIsMultiCountryModalOpen] = useState(false);
   const [formTravelDates, setFormTravelDates] = useState<string | undefined>();
 
-
   const { toast } = useToast();
 
   const handleFormSubmit = async (data: SuggestDestinationsFormInput) => {
@@ -36,10 +32,9 @@ export default function HomePage() {
     setError(null);
     setSuggestedDestinations([]);
     setDisclaimer(null);
-    setFormTravelDates(data.travelDates); // Store for itinerary modal context and passing to list
+    setFormTravelDates(data.travelDates); 
 
     try {
-      // Type assertion if the AI flow output matches our expected structure
       const result = await suggestDestinations(data) as AISuggestedDestinationsOutput; 
       if (result && result.destinations) {
         setSuggestedDestinations(result.destinations);
@@ -84,6 +79,10 @@ export default function HomePage() {
     setIsMultiCountryModalOpen(true);
   };
 
+  const totalExpensesForAllSuggestions = useMemo(() => {
+    return suggestedDestinations.reduce((sum, dest) => sum + dest.estimatedExpenses, 0);
+  }, [suggestedDestinations]);
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
       <DestinationForm onSubmit={handleFormSubmit} isLoading={isLoading} />
@@ -107,16 +106,25 @@ export default function HomePage() {
         <section className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <h2 className="text-3xl font-semibold text-center sm:text-left">Suggested Destinations</h2>
-            {suggestedDestinations.length > 1 && (
-              <Button onClick={handleOpenMultiCountryModal} variant="outline">
-                <Layers className="mr-2 h-4 w-4" />
-                Plan Multi-Country Trip
-              </Button>
-            )}
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              {suggestedDestinations.length > 0 && (
+                <div className="text-sm text-muted-foreground flex items-center gap-1 p-2 border rounded-md bg-secondary/50">
+                  <DollarSign className="h-4 w-4 text-primary"/>
+                  <span>Total Est. Expenses (All): </span>
+                  <span className="font-bold text-primary">${totalExpensesForAllSuggestions.toLocaleString()}</span>
+                </div>
+              )}
+              {suggestedDestinations.length > 1 && (
+                <Button onClick={handleOpenMultiCountryModal} variant="outline">
+                  <Layers className="mr-2 h-4 w-4" />
+                  Plan Multi-Country Trip
+                </Button>
+              )}
+            </div>
           </div>
           {disclaimer && (
-            <Alert className="bg-accent/20 border-accent/50 text-accent-foreground max-w-3xl mx-auto">
-              <Terminal className="h-4 w-4" />
+            <Alert className="bg-accent/10 border-accent/30 text-accent-foreground max-w-3xl mx-auto">
+              <Info className="h-4 w-4 text-accent" />
               <AlertTitle>Please Note</AlertTitle>
               <AlertDescription>{disclaimer}</AlertDescription>
             </Alert>
@@ -129,10 +137,9 @@ export default function HomePage() {
         </section>
       )}
       
-      {!isLoading && !error && suggestedDestinations.length === 0 && formTravelDates /* only show if search was attempted */ && (
+      {!isLoading && !error && suggestedDestinations.length === 0 && formTravelDates && (
         <p className="text-center text-xl text-muted-foreground py-10">No destinations matched your criteria. Please try different options.</p>
       )}
-
 
       <ItineraryModal
         isOpen={isItineraryModalOpen}

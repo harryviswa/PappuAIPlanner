@@ -29,3 +29,4 @@ export interface SuggestDestinationsFormInput {
   budget: number;
   numberOfTravelers: number;
 }
+

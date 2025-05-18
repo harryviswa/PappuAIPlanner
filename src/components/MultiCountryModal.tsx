@@ -5,9 +5,9 @@ import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import DestinationCard from './DestinationCard'; // Re-using for selection UI
+import DestinationCard from './DestinationCard'; 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Layers, ListChecks, MapPin } from 'lucide-react';
+import { Layers, ListChecks, MapPin, DollarSign } from 'lucide-react';
 
 interface MultiCountryModalProps {
   isOpen: boolean;
@@ -21,7 +21,7 @@ export default function MultiCountryModal({
   isOpen,
   onClose,
   allSuggestedDestinations,
-  maxSelectableCountries = 4, // As per "2-4 countries"
+  maxSelectableCountries = 4, 
   travelDates,
 }: MultiCountryModalProps) {
   const [selectedCountries, setSelectedCountries] = useState<Destination[]>([]);
@@ -33,7 +33,7 @@ export default function MultiCountryModal({
         if (prev.length < maxSelectableCountries) {
           return [...prev, destination];
         }
-        return prev; // Max limit reached
+        return prev; 
       } else {
         return prev.filter(d => d.country !== destination.country);
       }
@@ -50,7 +50,6 @@ export default function MultiCountryModal({
     setViewingItineraries(false);
   };
 
-  // Reset state on close
   const handleModalClose = () => {
     setSelectedCountries([]);
     setViewingItineraries(false);
@@ -62,6 +61,10 @@ export default function MultiCountryModal({
     [allSuggestedDestinations]
   );
 
+  const totalExpensesForSelected = useMemo(() => {
+    return selectedCountries.reduce((sum, dest) => sum + dest.estimatedExpenses, 0);
+  }, [selectedCountries]);
+
   return (
     <Dialog open={isOpen} onOpenChange={handleModalClose}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
@@ -72,8 +75,7 @@ export default function MultiCountryModal({
                 <Layers className="h-6 w-6 text-primary" /> Plan Multi-Country Trip
               </DialogTitle>
               <DialogDescription>
-                Select up to {maxSelectableCountries} countries from your suggestions to combine.
-                ({selectedCountries.length}/{maxSelectableCountries} selected)
+                Select {selectedCountries.length > 0 ? `${selectedCountries.length} of up to` : 'up to'} {maxSelectableCountries} countries from your suggestions to combine.
               </DialogDescription>
             </DialogHeader>
             <ScrollArea className="flex-grow pr-2 -mr-2 max-h-[60vh]">
@@ -82,10 +84,11 @@ export default function MultiCountryModal({
                   <DestinationCard
                     key={dest.country}
                     destination={dest}
-                    onViewItinerary={() => { /* No direct itinerary view here */ }}
+                    onViewItinerary={() => { /* No direct itinerary view here, handled by modal flow */ }}
                     onSelectForMultiCountry={handleSelectCountry}
                     isSelectedForMultiCountry={selectedCountries.some(sc => sc.country === dest.country)}
                     isMultiCountryMode={true}
+                    travelDates={travelDates} // Pass travelDates for flight links if needed inside card
                   />
                 ))}
               </div>
@@ -103,9 +106,18 @@ export default function MultiCountryModal({
               <DialogTitle className="text-2xl flex items-center gap-2">
                 <ListChecks className="h-6 w-6 text-primary" /> Combined Itineraries
               </DialogTitle>
-              <DialogDescription>
-                Review the itineraries for your selected countries.
-              </DialogDescription>
+              <div className="flex justify-between items-center">
+                <DialogDescription>
+                  Review the itineraries for your {selectedCountries.length} selected countries.
+                </DialogDescription>
+                {selectedCountries.length > 0 && (
+                  <div className="text-sm text-muted-foreground flex items-center gap-1 p-2 border rounded-md bg-secondary/50">
+                    <DollarSign className="h-4 w-4 text-primary"/>
+                    <span>Total Est. Expenses: </span>
+                    <span className="font-bold text-primary">${totalExpensesForSelected.toLocaleString()}</span>
+                  </div>
+                )}
+              </div>
             </DialogHeader>
             <ScrollArea className="flex-grow pr-2 -mr-2 max-h-[60vh]">
               <Accordion type="multiple" className="w-full">

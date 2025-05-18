@@ -45,7 +45,7 @@ const DestinationSchema = z.object({
 
 const SuggestDestinationsOutputSchema = z.object({
   destinations: z.array(DestinationSchema),
-  disclaimer: z.string().optional().describe('Disclaimer regarding data accuracy.'),
+  disclaimer: z.string().optional().describe('Optional: Disclaimer regarding data accuracy or estimations (e.g., "All prices are estimates and subject to change.").'),
 });
 export type SuggestDestinationsOutput = z.infer<typeof SuggestDestinationsOutputSchema>;
 
@@ -74,6 +74,8 @@ For each destination:
 4. Provide 'visaRequirements' as a string.
 5. Create a recommended day-by-day 'itinerary' in Markdown format (headings for days, bullet points for activities) based on the travel dates given.
 6. If possible, provide a 'detailedExpenses' object with numeric estimates in USD for 'food', 'stay' (accommodation), 'sightseeing', 'shopping', and 'transport' (local). If a specific category isn't applicable or calculable, it can be omitted or set to 0 within the detailedExpenses object. If no breakdown is possible, the detailedExpenses field itself can be omitted.
+   **Important**: Ensure the 'estimatedExpenses' value accurately reflects the sum of all components in 'detailedExpenses' if the breakdown is provided. If they cannot be perfectly aligned, prioritize the accuracy of 'estimatedExpenses' as the overall trip cost.
+7. Provide a brief 'disclaimer' if estimations are highly variable or based on limited data (e.g., "Flight and accommodation prices are highly dynamic. Please check current rates.").
 
 Format output as JSON.`,
 });
@@ -86,8 +88,7 @@ const suggestDestinationsFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    // Ensure detailedExpenses is at least an empty object if not provided by AI, to prevent undefined errors downstream
-    // This is now handled by schema optionality and UI checks
     return output!;
   }
 );
+

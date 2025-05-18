@@ -36,9 +36,7 @@ export default function DestinationCard({
       if (dates.length === 2) {
         const departureDate = dates[0]; // Should be YYYY-MM-DD
         const returnDate = dates[1];   // Should be YYYY-MM-DD
-        // Google Flights typically uses 'YYYY-MM-DD'
-        // Constructing query: flights to [COUNTRY] from [YYYY-MM-DD] to [YYYY-MM-DD]
-        url += `%20from%20${encodeURIComponent(departureDate)}%20to%20${encodeURIComponent(returnDate)}`;
+        url += `&hl=en&curr=USD&gl=us&departure_date=${departureDate}&arrival_date=${returnDate}`;
       }
     }
     return url;
@@ -46,17 +44,17 @@ export default function DestinationCard({
   
   const googleFlightsUrl = getGoogleFlightsUrl();
 
-  const hasDetailedExpenses = destination.detailedExpenses && Object.keys(destination.detailedExpenses).length > 0;
+  const hasDetailedExpenses = destination.detailedExpenses && Object.values(destination.detailedExpenses).some(val => val !== undefined && val > 0);
 
   return (
     <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col md:flex-row h-full w-full">
-      <div className="relative w-full md:w-1/3 h-64 md:h-auto"> {/* Adjusted for landscape */}
+      <div className="relative w-full md:w-1/3 h-64 md:h-auto">
         <Image
           src={`https://placehold.co/600x400.png?text=${encodeURIComponent(destination.country)}`}
           alt={`Image of ${destination.country}`}
           layout="fill"
           objectFit="cover"
-          data-ai-hint="travel landmark"
+          data-ai-hint={`travel landmark ${destination.country.toLowerCase()}`}
         />
       </div>
       <div className="w-full md:w-2/3 flex flex-col">
@@ -81,7 +79,9 @@ export default function DestinationCard({
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-1 text-muted-foreground"><Plane className="h-4 w-4" /> Avg. Flight:</span>
             <div className="flex items-center gap-2">
-              <Badge variant="secondary">${destination.averageFlightPrice.toLocaleString()}</Badge>
+              <Badge variant="secondary" className="text-base font-semibold px-2.5 py-1">
+                ${destination.averageFlightPrice.toLocaleString()}
+              </Badge>
               <Button asChild variant="outline" size="sm" className="h-auto px-2 py-1 text-xs">
                 <a href={googleFlightsUrl} target="_blank" rel="noopener noreferrer">
                   <Ticket className="mr-1 h-3 w-3" /> Book
@@ -92,62 +92,66 @@ export default function DestinationCard({
           
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" className="flex items-center justify-between w-full p-1 text-sm text-muted-foreground hover:bg-muted/30 h-auto">
+              <Button variant="ghost" className="flex items-center justify-between w-full p-1 text-sm text-muted-foreground hover:bg-muted/30 h-auto disabled:opacity-100 disabled:cursor-default" disabled={!hasDetailedExpenses}>
                 <span className="flex items-center gap-1">
                   <CreditCard className="h-4 w-4" /> Est. Expenses:
                 </span>
                 <div className="flex items-center gap-1">
-                  <Badge variant="secondary">${destination.estimatedExpenses.toLocaleString()}</Badge>
+                  <Badge variant="secondary" className="text-base font-semibold px-2.5 py-1">
+                    ${destination.estimatedExpenses.toLocaleString()}
+                  </Badge>
                   {hasDetailedExpenses && <Info className="h-3 w-3 text-primary" />}
                 </div>
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80 z-50">
-              <div className="grid gap-4">
-                <div className="space-y-1">
-                  <h4 className="font-medium leading-none text-base">Expense Breakdown</h4>
-                  <p className="text-xs text-muted-foreground">
-                    Estimated costs for your trip (USD).
-                  </p>
-                </div>
-                {hasDetailedExpenses && destination.detailedExpenses ? (
-                  <div className="grid gap-2 text-xs">
-                    {destination.detailedExpenses.food !== undefined && (
-                      <div className="grid grid-cols-2 items-center gap-2">
-                        <span className="flex items-center"><Utensils className="mr-2 h-4 w-4 text-muted-foreground" /> Food:</span>
-                        <span className="text-right font-medium">${destination.detailedExpenses.food.toLocaleString()}</span>
-                      </div>
-                    )}
-                    {destination.detailedExpenses.stay !== undefined && (
-                      <div className="grid grid-cols-2 items-center gap-2">
-                        <span className="flex items-center"><BedDouble className="mr-2 h-4 w-4 text-muted-foreground" /> Stay:</span>
-                        <span className="text-right font-medium">${destination.detailedExpenses.stay.toLocaleString()}</span>
-                      </div>
-                    )}
-                    {destination.detailedExpenses.sightseeing !== undefined && (
-                      <div className="grid grid-cols-2 items-center gap-2">
-                        <span className="flex items-center"><Camera className="mr-2 h-4 w-4 text-muted-foreground" /> Sightseeing:</span>
-                        <span className="text-right font-medium">${destination.detailedExpenses.sightseeing.toLocaleString()}</span>
-                      </div>
-                    )}
-                    {destination.detailedExpenses.shopping !== undefined && (
-                      <div className="grid grid-cols-2 items-center gap-2">
-                        <span className="flex items-center"><ShoppingBag className="mr-2 h-4 w-4 text-muted-foreground" /> Shopping:</span>
-                        <span className="text-right font-medium">${destination.detailedExpenses.shopping.toLocaleString()}</span>
-                      </div>
-                    )}
-                    {destination.detailedExpenses.transport !== undefined && (
-                      <div className="grid grid-cols-2 items-center gap-2">
-                        <span className="flex items-center"><CarFront className="mr-2 h-4 w-4 text-muted-foreground" /> Transport:</span>
-                        <span className="text-right font-medium">${destination.detailedExpenses.transport.toLocaleString()}</span>
-                      </div>
-                    )}
+            {hasDetailedExpenses && (
+              <PopoverContent className="w-80 z-50">
+                <div className="grid gap-4">
+                  <div className="space-y-1">
+                    <h4 className="font-medium leading-none text-base">Expense Breakdown</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Estimated costs for your trip (USD). Total: ${destination.estimatedExpenses.toLocaleString()}
+                    </p>
                   </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">Detailed expense breakdown not available.</p>
-                )}
-              </div>
-            </PopoverContent>
+                  {destination.detailedExpenses ? (
+                    <div className="grid gap-2 text-xs">
+                      {destination.detailedExpenses.food !== undefined && destination.detailedExpenses.food > 0 && (
+                        <div className="grid grid-cols-2 items-center gap-2">
+                          <span className="flex items-center"><Utensils className="mr-2 h-4 w-4 text-muted-foreground" /> Food:</span>
+                          <span className="text-right font-semibold">${destination.detailedExpenses.food.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {destination.detailedExpenses.stay !== undefined && destination.detailedExpenses.stay > 0 && (
+                        <div className="grid grid-cols-2 items-center gap-2">
+                          <span className="flex items-center"><BedDouble className="mr-2 h-4 w-4 text-muted-foreground" /> Stay:</span>
+                          <span className="text-right font-semibold">${destination.detailedExpenses.stay.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {destination.detailedExpenses.sightseeing !== undefined && destination.detailedExpenses.sightseeing > 0 && (
+                        <div className="grid grid-cols-2 items-center gap-2">
+                          <span className="flex items-center"><Camera className="mr-2 h-4 w-4 text-muted-foreground" /> Sightseeing:</span>
+                          <span className="text-right font-semibold">${destination.detailedExpenses.sightseeing.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {destination.detailedExpenses.shopping !== undefined && destination.detailedExpenses.shopping > 0 && (
+                        <div className="grid grid-cols-2 items-center gap-2">
+                          <span className="flex items-center"><ShoppingBag className="mr-2 h-4 w-4 text-muted-foreground" /> Shopping:</span>
+                          <span className="text-right font-semibold">${destination.detailedExpenses.shopping.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {destination.detailedExpenses.transport !== undefined && destination.detailedExpenses.transport > 0 && (
+                        <div className="grid grid-cols-2 items-center gap-2">
+                          <span className="flex items-center"><CarFront className="mr-2 h-4 w-4 text-muted-foreground" /> Transport:</span>
+                          <span className="text-right font-semibold">${destination.detailedExpenses.transport.toLocaleString()}</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Detailed expense breakdown not available.</p>
+                  )}
+                </div>
+              </PopoverContent>
+            )}
           </Popover>
 
           <div className="flex items-start gap-1 pt-1">

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { MapPin, Plane, CreditCard, ListChecks, CheckSquare, XSquare, Ticket, Info, Utensils, BedDouble, Camera, ShoppingBag, CarFront, Star } from 'lucide-react';
+import { MapPin, Plane, CreditCard, ListChecks, CheckSquare, XSquare, Ticket, Info, Utensils, BedDouble, Camera, ShoppingBag, CarFront, Star, PiggyBank } from 'lucide-react';
 import Image from 'next/image';
 
 interface DestinationCardProps {
@@ -15,7 +15,7 @@ interface DestinationCardProps {
   onSelectForMultiCountry?: (destination: Destination, selected: boolean) => void;
   isSelectedForMultiCountry?: boolean;
   isMultiCountryMode?: boolean;
-  travelDates?: string; // Expected format: "YYYY-MM-DD to YYYY-MM-DD"
+  travelDates?: string; 
   numberOfTravelers?: number;
 }
 
@@ -32,9 +32,7 @@ export default function DestinationCard({
                            !destination.visaRequirements.toLowerCase().includes('not required');
 
   const getGoogleFlightsUrl = () => {
-    const baseUrl = 'https://www.google.com/travel/flights/search';
-    const queryParams = new URLSearchParams();
-    
+    const baseUrl = 'https://www.google.com/travel/flights';
     let searchQuery = `flights to ${destination.country}`;
 
     if (travelDates) {
@@ -42,7 +40,6 @@ export default function DestinationCard({
       if (dates.length === 2) {
         const departureDate = dates[0]; // Should be YYYY-MM-DD
         const returnDate = dates[1];   // Should be YYYY-MM-DD
-        // Ensure dates are valid before adding to query
         if (departureDate && returnDate) {
             searchQuery += ` from ${departureDate} to ${returnDate}`;
         }
@@ -53,10 +50,9 @@ export default function DestinationCard({
       searchQuery += ` for ${numberOfTravelers} adult${numberOfTravelers > 1 ? 's' : ''}`;
     }
     
+    const queryParams = new URLSearchParams();
     queryParams.append('q', searchQuery);
     
-    // It's good practice to also specify language and currency if possible,
-    // though Google often infers this.
     queryParams.append('hl', 'en');
     queryParams.append('curr', 'USD');
 
@@ -115,19 +111,24 @@ export default function DestinationCard({
               </Button>
             </div>
           </div>
+
+          <div className="flex items-center justify-between py-2 border-t mt-2 pt-3">
+            <div className="flex items-center gap-2">
+              <PiggyBank className="h-6 w-6 text-primary" />
+              <span className="text-muted-foreground font-medium">Total Est. Expenses:</span>
+            </div>
+            <span className="text-2xl font-bold text-primary">
+              ${destination.estimatedExpenses.toLocaleString()}
+            </span>
+          </div>
           
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" className="flex items-center justify-between w-full p-1 text-sm text-muted-foreground hover:bg-muted/30 h-auto disabled:opacity-100 disabled:cursor-default" disabled={!hasDetailedExpenses}>
+              <Button variant="link" className="flex items-center justify-start w-full p-0 text-xs text-muted-foreground hover:text-primary h-auto disabled:opacity-100 disabled:cursor-default" disabled={!hasDetailedExpenses}>
                 <span className="flex items-center gap-1">
-                  <CreditCard className="h-4 w-4" /> Est. Expenses:
+                  <CreditCard className="h-3 w-3" /> View Expense Breakdown
+                  {hasDetailedExpenses && <Info className="ml-1 h-3 w-3" />}
                 </span>
-                <div className="flex items-center gap-1">
-                  <Badge variant="secondary" className="text-lg font-semibold px-3 py-1">
-                    ${destination.estimatedExpenses.toLocaleString()}
-                  </Badge>
-                  {hasDetailedExpenses && <Info className="h-3 w-3 text-primary" />}
-                </div>
               </Button>
             </PopoverTrigger>
             {hasDetailedExpenses && destination.detailedExpenses && (
@@ -136,7 +137,7 @@ export default function DestinationCard({
                   <div className="space-y-1">
                     <h4 className="font-medium leading-none text-base">Expense Breakdown</h4>
                     <p className="text-xs text-muted-foreground">
-                      Overall Est: ${destination.estimatedExpenses.toLocaleString()} (USD)
+                      Overall Est. (from AI): ${destination.estimatedExpenses.toLocaleString()} (USD)
                     </p>
                   </div>
                   <div className="grid gap-2 text-xs">
@@ -215,3 +216,4 @@ export default function DestinationCard({
     </Card>
   );
 }
+

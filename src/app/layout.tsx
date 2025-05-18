@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'WanderWise - Smart Travel Planner',
+  title: 'Smart Trip Planner',
   description: 'Find the best travel destinations tailored to your preferences.',
 };
 

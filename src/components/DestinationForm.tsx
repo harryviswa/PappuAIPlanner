@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { SuggestDestinationsFormInput } from '@/lib/types';
@@ -10,16 +11,49 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon, Users, DollarSign, Flag, Search } from 'lucide-react';
 import * as React from 'react';
+import type { DateRange } from 'react-day-picker';
+import { nationalities } from '@/lib/nationalities';
 
 const formSchema = z.object({
-  travelDates: z.string().refine((date) => /^\d{4}-\d{2}-\d{2}$/.test(date), {
-    message: "Travel date must be in YYYY-MM-DD format.",
-  }),
-  nationality: z.string().min(2, { message: "Nationality must be at least 2 characters." }),
+  travelDates: z
+    .object(
+      {
+        from: z.date().optional(),
+        to: z.date().optional(),
+      },
+      {
+        required_error: 'Please select a date range.',
+        invalid_type_error: 'Invalid date range.',
+      }
+    )
+    .refine((data) => !!data.from, {
+      message: 'Start date is required.',
+      path: ['from'],
+    })
+    .refine((data) => !!data.to, {
+      message: 'End date is required.',
+      path: ['to'],
+    })
+    .refine(
+      (data) => {
+        if (data.from && data.to) {
+          const fromDate = new Date(data.from.getFullYear(), data.from.getMonth(), data.from.getDate());
+          const toDate = new Date(data.to.getFullYear(), data.to.getMonth(), data.to.getDate());
+          return toDate >= fromDate;
+        }
+        return true; 
+      },
+      {
+        message: 'End date cannot be before start date.',
+        path: ['to'], 
+      }
+    ),
+  nationality: z.string().min(1, { message: "Please select your nationality." }),
   budget: z.coerce.number().positive({ message: "Budget must be a positive number." }),
   numberOfTravelers: z.coerce.number().int().min(1, { message: "Must be at least 1 traveler." }),
 });
@@ -35,15 +69,27 @@ export default function DestinationForm({ onSubmit, isLoading }: DestinationForm
   const form = useForm<DestinationFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      travelDates: '',
+      travelDates: {
+        from: undefined,
+        to: undefined,
+      },
       nationality: '',
       budget: 1000,
       numberOfTravelers: 1,
     },
   });
 
-  const handleFormSubmit: SubmitHandler<DestinationFormValues> = (data) => {
-    onSubmit(data);
+  const handleFormSubmit: SubmitHandler<DestinationFormValues> = (values) => {
+    // Ensure from and to dates are present, validated by Zod
+    const formattedTravelDates = `${format(values.travelDates.from!, "yyyy-MM-dd")} to ${format(values.travelDates.to!, "yyyy-MM-dd")}`;
+    
+    onSubmit({
+      // budget and numberOfTravelers are already coerced to number by Zod
+      budget: values.budget,
+      numberOfTravelers: values.numberOfTravelers,
+      nationality: values.nationality,
+      travelDates: formattedTravelDates,
+    });
   };
 
   return (
@@ -65,7 +111,7 @@ export default function DestinationForm({ onSubmit, isLoading }: DestinationForm
               name="travelDates"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel className="mb-1">Travel Date</FormLabel>
+                  <FormLabel className="mb-1">Travel Dates</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -73,21 +119,32 @@ export default function DestinationForm({ onSubmit, isLoading }: DestinationForm
                           variant={"outline"}
                           className={cn(
                             "w-full justify-start text-left font-normal",
-                            !field.value && "text-muted-foreground"
+                            !field.value?.from && "text-muted-foreground"
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? format(new Date(field.value), "PPP") : <span>Pick a date</span>}
+                          {field.value?.from ? (
+                            field.value.to ? (
+                              <>
+                                {format(field.value.from, "LLL dd, y")} - {format(field.value.to, "LLL dd, y")}
+                              </>
+                            ) : (
+                              format(field.value.from, "LLL dd, y")
+                            )
+                          ) : (
+                            <span>Pick a date range</span>
+                          )}
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
-                        mode="single"
-                        selected={field.value ? new Date(field.value) : undefined}
-                        onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : '')}
-                        disabled={(date) => date < new Date(new Date().setHours(0,0,0,0)) } // Disable past dates
+                        mode="range"
+                        selected={field.value as DateRange | undefined} // Cast because react-hook-form type might be generic
+                        onSelect={field.onChange}
+                        disabled={(date) => date < new Date(new Date().setHours(0,0,0,0)) }
                         initialFocus
+                        numberOfMonths={2}
                       />
                     </PopoverContent>
                   </Popover>
@@ -102,9 +159,20 @@ export default function DestinationForm({ onSubmit, isLoading }: DestinationForm
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center gap-1"><Flag className="h-4 w-4 text-muted-foreground"/>Nationality</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., American, Indian" {...field} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your nationality" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {nationalities.map((nat) => (
+                        <SelectItem key={nat.value} value={nat.value}>
+                          {nat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -161,3 +229,4 @@ export default function DestinationForm({ onSubmit, isLoading }: DestinationForm
     </Card>
   );
 }
+

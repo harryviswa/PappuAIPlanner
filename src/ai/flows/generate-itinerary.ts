@@ -1,3 +1,4 @@
+
 // This file is machine-generated - edit with care!
 
 'use server';
@@ -14,7 +15,7 @@ import {z} from 'genkit';
 
 const GenerateItineraryInputSchema = z.object({
   destination: z.string().describe('The desired travel destination.'),
-  travelDates: z.string().describe('The travel dates in ISO format (YYYY-MM-DD).'),
+  travelDates: z.string().describe('The travel dates, potentially a range (e.g., "YYYY-MM-DD to YYYY-MM-DD").'),
   interests: z.string().optional().describe('Optional: A comma-separated list of interests, e.g., history, food, adventure.'),
 });
 export type GenerateItineraryInput = z.infer<typeof GenerateItineraryInputSchema>;
@@ -57,3 +58,4 @@ const generateItineraryFlow = ai.defineFlow(
     return output!;
   }
 );
+

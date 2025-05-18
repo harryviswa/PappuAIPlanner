@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Destination } from '@/lib/types';
@@ -15,7 +16,7 @@ interface ItineraryModalProps {
   isOpen: boolean;
   onClose: () => void;
   destination: Destination | null;
-  travelDates?: string; // Original travel dates from form
+  travelDates?: string; // Formatted string: "YYYY-MM-DD to YYYY-MM-DD"
 }
 
 export default function ItineraryModal({ isOpen, onClose, destination, travelDates }: ItineraryModalProps) {
@@ -31,7 +32,7 @@ export default function ItineraryModal({ isOpen, onClose, destination, travelDat
           </DialogTitle>
           {travelDates && (
              <DialogDescription className="flex items-center gap-1 text-sm">
-                <CalendarDays className="h-4 w-4" /> Based on travel around: {new Date(travelDates).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                <CalendarDays className="h-4 w-4" /> For travel dates: {travelDates}
             </DialogDescription>
           )}
         </DialogHeader>
@@ -44,3 +45,4 @@ export default function ItineraryModal({ isOpen, onClose, destination, travelDat
     </Dialog>
   );
 }
+

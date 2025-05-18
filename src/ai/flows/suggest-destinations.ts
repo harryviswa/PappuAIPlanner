@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -14,7 +15,7 @@ import {z} from 'genkit';
 const SuggestDestinationsInputSchema = z.object({
   travelDates: z
     .string()
-    .describe('The travel dates in ISO 8601 format (YYYY-MM-DD).'),
+    .describe('The travel dates, potentially a range (e.g., "YYYY-MM-DD to YYYY-MM-DD").'),
   nationality: z.string().describe('The traveler\'s nationality.'),
   budget: z.number().describe('The budget for the trip in USD.'),
   numberOfTravelers: z.number().describe('The number of travelers.'),
@@ -63,3 +64,4 @@ const suggestDestinationsFlow = ai.defineFlow(
     return output!;
   }
 );
+

@@ -96,10 +96,6 @@ export default function HomePage() {
     return { primarySuggestions: primary, premiumSuggestions: premium };
   }, [allDestinations]);
 
-  const totalExpensesForAllSuggestions = useMemo(() => {
-    return allDestinations.reduce((sum, dest) => sum + dest.estimatedExpenses, 0);
-  }, [allDestinations]);
-
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
       <DestinationForm onSubmit={handleFormSubmit} isLoading={isLoading} />
@@ -125,13 +121,6 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
               <h2 className="text-3xl font-semibold text-center sm:text-left">Suggested Destinations</h2>
               <div className="flex flex-col sm:flex-row items-center gap-2">
-                {allDestinations.length > 0 && (
-                  <div className="text-sm text-muted-foreground flex items-center gap-1 p-2 border rounded-md bg-secondary/50">
-                    <DollarSign className="h-4 w-4 text-primary"/>
-                    <span>Total Est. Expenses (All): </span>
-                    <span className="font-bold text-primary">${totalExpensesForAllSuggestions.toLocaleString()}</span>
-                  </div>
-                )}
                 {primarySuggestions.length > 1 && ( // Only show if there are multiple primary suggestions to combine
                   <Button onClick={handleOpenMultiCountryModal} variant="outline">
                     <Layers className="mr-2 h-4 w-4" />
@@ -198,3 +187,4 @@ export default function HomePage() {
     </div>
   );
 }
+

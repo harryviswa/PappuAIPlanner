@@ -106,3 +106,4 @@ const suggestDestinationsFlow = ai.defineFlow(
     return output!;
   }
 );
+

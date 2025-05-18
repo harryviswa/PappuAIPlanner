@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Destination } from '@/lib/types';
@@ -15,6 +16,7 @@ interface MultiCountryModalProps {
   allSuggestedDestinations: Destination[];
   maxSelectableCountries?: number;
   travelDates?: string;
+  numberOfTravelers?: number;
 }
 
 export default function MultiCountryModal({
@@ -23,6 +25,7 @@ export default function MultiCountryModal({
   allSuggestedDestinations,
   maxSelectableCountries = 4, 
   travelDates,
+  numberOfTravelers,
 }: MultiCountryModalProps) {
   const [selectedCountries, setSelectedCountries] = useState<Destination[]>([]);
   const [viewingItineraries, setViewingItineraries] = useState(false);
@@ -88,7 +91,8 @@ export default function MultiCountryModal({
                     onSelectForMultiCountry={handleSelectCountry}
                     isSelectedForMultiCountry={selectedCountries.some(sc => sc.country === dest.country)}
                     isMultiCountryMode={true}
-                    travelDates={travelDates} // Pass travelDates for flight links if needed inside card
+                    travelDates={travelDates} 
+                    numberOfTravelers={numberOfTravelers}
                   />
                 ))}
               </div>

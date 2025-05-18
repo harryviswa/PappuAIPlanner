@@ -16,6 +16,7 @@ interface DestinationCardProps {
   isSelectedForMultiCountry?: boolean;
   isMultiCountryMode?: boolean;
   travelDates?: string; // Expected format: "YYYY-MM-DD to YYYY-MM-DD"
+  numberOfTravelers?: number;
 }
 
 export default function DestinationCard({
@@ -25,12 +26,12 @@ export default function DestinationCard({
   isSelectedForMultiCountry,
   isMultiCountryMode = false,
   travelDates,
+  numberOfTravelers,
 }: DestinationCardProps) {
   const visaSeemsRequired = destination.visaRequirements.toLowerCase().includes('required') || 
                            !destination.visaRequirements.toLowerCase().includes('not required');
 
   const getGoogleFlightsUrl = () => {
-    // Base URL for searching flights to a destination
     let url = `https://www.google.com/travel/flights?q=Flights%20to%20${encodeURIComponent(destination.country)}`;
     
     if (travelDates) {
@@ -38,9 +39,11 @@ export default function DestinationCard({
       if (dates.length === 2) {
         const departureDate = dates[0]; // Should be YYYY-MM-DD
         const returnDate = dates[1];   // Should be YYYY-MM-DD
-        // Add date parameters. Google Flights uses dep_date and ret_date
         url += `&hl=en&curr=USD&dep_date=${departureDate}&ret_date=${returnDate}`;
       }
+    }
+    if (numberOfTravelers && numberOfTravelers > 0) {
+      url += `&adults=${numberOfTravelers}`;
     }
     return url;
   };
@@ -60,7 +63,7 @@ export default function DestinationCard({
           data-ai-hint={`travel landmark ${destination.country.toLowerCase()}`}
         />
          {destination.isPremiumOption && (
-          <Badge variant="destructive" className="absolute top-2 right-2 text-sm px-3 py-1 flex items-center gap-1 z-10 bg-amber-500 text-white border-amber-600">
+          <Badge variant="default" className="absolute top-2 right-2 text-sm px-3 py-1 flex items-center gap-1 z-10 bg-primary text-primary-foreground border-primary/80"> {/* Adjusted for new theme */}
             <Star className="h-4 w-4" /> Premium
           </Badge>
         )}
@@ -118,7 +121,7 @@ export default function DestinationCard({
                   <div className="space-y-1">
                     <h4 className="font-medium leading-none text-base">Expense Breakdown</h4>
                     <p className="text-xs text-muted-foreground">
-                      Total Est: ${destination.estimatedExpenses.toLocaleString()} (USD)
+                      Overall Est: ${destination.estimatedExpenses.toLocaleString()} (USD)
                     </p>
                   </div>
                   <div className="grid gap-2 text-xs">
@@ -154,7 +157,7 @@ export default function DestinationCard({
                     )}
                     <hr className="my-1"/>
                     <div className="grid grid-cols-2 items-center gap-2 font-bold">
-                        <span className="flex items-center">Total of Breakdown:</span>
+                        <span className="flex items-center">Sum of Breakdown:</span>
                         <span className="text-right">
                           ${(
                             (destination.detailedExpenses.food || 0) +

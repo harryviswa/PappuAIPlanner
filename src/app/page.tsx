@@ -25,6 +25,7 @@ export default function HomePage() {
   
   const [isMultiCountryModalOpen, setIsMultiCountryModalOpen] = useState(false);
   const [formTravelDates, setFormTravelDates] = useState<string | undefined>();
+  const [formNumberOfTravelers, setFormNumberOfTravelers] = useState<number | undefined>();
 
   const { toast } = useToast();
 
@@ -34,6 +35,7 @@ export default function HomePage() {
     setAllDestinations([]);
     setDisclaimer(null);
     setFormTravelDates(data.travelDates); 
+    setFormNumberOfTravelers(data.numberOfTravelers);
 
     try {
       const result = await suggestDestinations(data) as AISuggestedDestinationsOutput; 
@@ -140,7 +142,8 @@ export default function HomePage() {
               <DestinationList 
                 destinations={primarySuggestions} 
                 onViewItinerary={handleViewItinerary}
-                travelDates={formTravelDates} 
+                travelDates={formTravelDates}
+                numberOfTravelers={formNumberOfTravelers}
               />
             ) : (
               <p className="text-center text-muted-foreground">No primary destinations matched your criteria.</p>
@@ -151,21 +154,22 @@ export default function HomePage() {
             <section className="space-y-6 pt-8 mt-8 border-t">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <h2 className="text-3xl font-semibold text-center sm:text-left flex items-center gap-2">
-                  <Star className="h-7 w-7 text-amber-500" />
+                  <Star className="h-7 w-7 text-yellow-500" /> {/* Changed to yellow-500 for better visibility with new theme */}
                   Premium & Splurge Options
                 </h2>
               </div>
               <DestinationList 
                 destinations={premiumSuggestions} 
                 onViewItinerary={handleViewItinerary}
-                travelDates={formTravelDates} 
+                travelDates={formTravelDates}
+                numberOfTravelers={formNumberOfTravelers}
               />
             </section>
           )}
         </>
       )}
       
-      {!isLoading && !error && allDestinations.length === 0 && formTravelDates && (
+      {!isLoading && !error && allDestinations.length === 0 && formTravelDates && ( /* formTravelDates ensures this shows only after a search */
         <p className="text-center text-xl text-muted-foreground py-10">No destinations matched your criteria. Please try different options.</p>
       )}
 
@@ -176,15 +180,15 @@ export default function HomePage() {
         travelDates={formTravelDates}
       />
 
-      {allDestinations.length > 0 && ( // Pass all destinations to multi-country, it will sort/filter internally if needed
+      {allDestinations.length > 0 && ( 
         <MultiCountryModal
           isOpen={isMultiCountryModalOpen}
           onClose={() => setIsMultiCountryModalOpen(false)}
           allSuggestedDestinations={allDestinations} 
           travelDates={formTravelDates}
+          numberOfTravelers={formNumberOfTravelers}
         />
       )}
     </div>
   );
 }
-

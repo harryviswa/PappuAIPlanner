@@ -8,9 +8,10 @@ interface DestinationListProps {
   destinations: Destination[];
   onViewItinerary: (destination: Destination) => void;
   travelDates?: string; // "YYYY-MM-DD to YYYY-MM-DD"
+  numberOfTravelers?: number;
 }
 
-export default function DestinationList({ destinations, onViewItinerary, travelDates }: DestinationListProps) {
+export default function DestinationList({ destinations, onViewItinerary, travelDates, numberOfTravelers }: DestinationListProps) {
   if (destinations.length === 0) {
     return <p className="text-center text-muted-foreground">No destinations found. Try adjusting your search criteria.</p>;
   }
@@ -27,6 +28,7 @@ export default function DestinationList({ destinations, onViewItinerary, travelD
           destination={dest}
           onViewItinerary={onViewItinerary}
           travelDates={travelDates}
+          numberOfTravelers={numberOfTravelers}
         />
       ))}
     </div>

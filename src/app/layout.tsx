@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Smart Trip Planner',
+  title: 'Pappu - AI Planner',
   description: 'Find the best travel destinations tailored to your preferences.',
 };
 

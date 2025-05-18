@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Destination } from '@/lib/types';
@@ -19,7 +20,7 @@ export default function DestinationList({ destinations, onViewItinerary, travelD
 
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="space-y-8"> {/* Changed from grid to space-y for single column layout */}
       {sortedDestinations.map((dest) => (
         <DestinationCard
           key={dest.country}

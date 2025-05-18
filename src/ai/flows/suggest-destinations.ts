@@ -28,21 +28,21 @@ const DetailedExpensesSchema = z.object({
   sightseeing: z.number().optional().describe('Estimated cost for sightseeing and activities in USD.'),
   shopping: z.number().optional().describe('Estimated budget for shopping in USD.'),
   transport: z.number().optional().describe('Estimated cost for local transportation in USD.'),
-}).describe('Detailed breakdown of estimated expenses in USD.');
+}).describe('Detailed breakdown of estimated on-ground expenses in USD.');
 
 const DestinationSchema = z.object({
   country: z.string().describe('The suggested country.'),
-  averageFlightPrice: z.number().describe('Average flight price in USD.'),
+  averageFlightPrice: z.number().describe('Average flight price in USD, per person.'),
   estimatedExpenses: z
     .number()
-    .describe('Total estimated expenses for the trip in USD.'),
+    .describe('Total estimated *on-ground* expenses for the trip in USD (e.g., accommodation, food, activities; excluding flights). This should be for the specified number of travelers and duration.'),
   visaRequirements: z
     .string()
     .describe('Visa requirements for the nationality (e.g., "Visa required", "Visa not required for stays up to 90 days", "e-Visa available").'),
   itinerary: z
     .string()
     .describe('Recommended day-by-day itinerary, formatted as a well-formed HTML table. The table should have columns: "Day", "Morning Activity", "Afternoon Activity", "Evening Activity", and "Notes". Use basic HTML tags (<table>, <thead>, <tbody>, <tr>, <th>, <td>). Do not include CSS styles.'),
-  detailedExpenses: DetailedExpensesSchema.optional().describe('Optional: Detailed breakdown of estimated expenses in USD.'),
+  detailedExpenses: DetailedExpensesSchema.optional().describe('Optional: Detailed breakdown of estimated on-ground expenses in USD. The sum of these details should ideally match the `estimatedExpenses` field.'),
   isPremiumOption: z.boolean().optional().describe('Indicates if this suggestion is a premium/higher-budget option (approx. 25-50% above stated budget).'),
 });
 
@@ -78,15 +78,16 @@ For the primary (non-premium) suggestions:
 
 For each destination (both primary and premium):
 1. Provide a 'country' name.
-2. Provide 'averageFlightPrice' in USD (numeric).
-3. Provide 'estimatedExpenses' which is the total estimated cost for the trip in USD (numeric).
+2. Provide 'averageFlightPrice' in USD (numeric, per person).
+3. Provide 'estimatedExpenses' which is the total estimated *on-ground* expenses for the trip in USD (numeric, e.g., accommodation, food, activities; excluding flights). This should cover the specified number of travelers and the duration implied by the travel dates.
 4. Provide 'visaRequirements' as a string, clearly indicating if a visa is needed or not, and any key details (e.g., "Visa required, apply at embassy", "Visa not required for tourist stays up to 30 days.", "e-Visa available online.").
 5. Create a recommended day-by-day 'itinerary', formatted as a well-formed HTML table. The table should have columns: "Day", "Morning Activity", "Afternoon Activity", "Evening Activity", and "Notes". Use basic HTML tags like <table>, <thead>, <tbody>, <tr>, <th>, and <td>. Do not include any CSS styles within the HTML.
-6. If possible, provide a 'detailedExpenses' object with numeric estimates in USD for 'food', 'stay' (accommodation), 'sightseeing', 'shopping', and 'transport' (local). If a specific category isn't applicable or calculable, it can be omitted or set to 0 within the detailedExpenses object.
-   **VERY IMPORTANT**: Ensure the 'estimatedExpenses' value accurately reflects the sum of all components in 'detailedExpenses' if the breakdown is provided. If they cannot be perfectly aligned, prioritize the accuracy of 'estimatedExpenses' as the overall trip cost, and make the sum of detailedExpenses match it.
+6. If possible, provide a 'detailedExpenses' object with numeric estimates in USD for 'food', 'stay' (accommodation), 'sightseeing', 'shopping', and 'transport' (local). These are on-ground costs.
+   **VERY IMPORTANT**: If 'detailedExpenses' is provided, ensure its sum accurately reflects the 'estimatedExpenses' (on-ground costs). If they cannot be perfectly aligned, prioritize the accuracy of 'estimatedExpenses' as the overall on-ground cost, and make the sum of detailedExpenses match it.
+7. Set 'isPremiumOption' appropriately.
 
 Additionally, provide 1-2 'Premium' or 'Splurge' destination options. These should be for travelers willing to spend roughly 25-50% more than their stated 'budget' (which is in USD) for a significantly enhanced experience or luxury. For these premium options:
-- Follow points 1-6 above (all monetary values in USD).
+- Follow points 1-7 above (all monetary values in USD).
 - Set 'isPremiumOption' to true.
 - These premium options should be listed AFTER the primary suggestions in the final output array.
 
@@ -106,4 +107,3 @@ const suggestDestinationsFlow = ai.defineFlow(
     return output!;
   }
 );
-

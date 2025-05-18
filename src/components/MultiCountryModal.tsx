@@ -64,8 +64,8 @@ export default function MultiCountryModal({
     [allSuggestedDestinations]
   );
 
-  const totalExpensesForSelected = useMemo(() => {
-    return selectedCountries.reduce((sum, dest) => sum + dest.estimatedExpenses, 0);
+  const totalTripCostForSelected = useMemo(() => {
+    return selectedCountries.reduce((sum, dest) => sum + dest.estimatedExpenses + dest.averageFlightPrice, 0);
   }, [selectedCountries]);
 
   // Basic styling for table elements if not covered by prose
@@ -120,12 +120,13 @@ export default function MultiCountryModal({
               <div className="flex justify-between items-center">
                 <DialogDescription>
                   Review the itineraries for your {selectedCountries.length} selected countries.
+                  (For {numberOfTravelers || 1} traveler{numberOfTravelers === 1 ? '' : 's'})
                 </DialogDescription>
                 {selectedCountries.length > 0 && (
                   <div className="text-sm text-muted-foreground flex items-center gap-1 p-2 border rounded-md bg-secondary/50">
                     <DollarSign className="h-4 w-4 text-primary"/>
-                    <span>Total Est. Expenses: </span>
-                    <span className="font-bold text-primary">${totalExpensesForSelected.toLocaleString()}</span>
+                    <span>Overall Trip Est: </span>
+                    <span className="font-bold text-primary">${totalTripCostForSelected.toLocaleString()}</span>
                   </div>
                 )}
               </div>

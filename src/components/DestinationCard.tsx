@@ -63,6 +63,8 @@ export default function DestinationCard({
 
   const hasDetailedExpenses = destination.detailedExpenses && Object.values(destination.detailedExpenses).some(val => val !== undefined && val > 0);
 
+  const totalTripCost = destination.averageFlightPrice + destination.estimatedExpenses;
+
   return (
     <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col md:flex-row h-full w-full">
       <div className="relative w-full md:w-1/3 h-64 md:h-auto">
@@ -99,7 +101,7 @@ export default function DestinationCard({
         </CardHeader>
         <CardContent className="space-y-3 text-sm flex-grow pt-0">
           <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1 text-muted-foreground"><Plane className="h-4 w-4" /> Avg. Flight:</span>
+            <span className="flex items-center gap-1 text-muted-foreground"><Plane className="h-4 w-4" /> Avg. Flight (per person):</span>
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-lg font-semibold px-3 py-1">
                 ${destination.averageFlightPrice.toLocaleString()}
@@ -115,10 +117,10 @@ export default function DestinationCard({
           <div className="flex items-center justify-between py-2 border-t mt-2 pt-3">
             <div className="flex items-center gap-2">
               <PiggyBank className="h-6 w-6 text-primary" />
-              <span className="text-muted-foreground font-medium">Total Est. Expenses:</span>
+              <span className="text-muted-foreground font-medium">Overall Trip Estimate:</span>
             </div>
             <span className="text-2xl font-bold text-primary">
-              ${destination.estimatedExpenses.toLocaleString()}
+              ${totalTripCost.toLocaleString()}
             </span>
           </div>
           
@@ -126,7 +128,7 @@ export default function DestinationCard({
             <PopoverTrigger asChild>
               <Button variant="link" className="flex items-center justify-start w-full p-0 text-xs text-muted-foreground hover:text-primary h-auto disabled:opacity-100 disabled:cursor-default" disabled={!hasDetailedExpenses}>
                 <span className="flex items-center gap-1">
-                  <CreditCard className="h-3 w-3" /> View Expense Breakdown
+                  <CreditCard className="h-3 w-3" /> View On-Ground Expense Breakdown
                   {hasDetailedExpenses && <Info className="ml-1 h-3 w-3" />}
                 </span>
               </Button>
@@ -135,9 +137,12 @@ export default function DestinationCard({
               <PopoverContent className="w-80 z-50">
                 <div className="grid gap-4">
                   <div className="space-y-1">
-                    <h4 className="font-medium leading-none text-base">Expense Breakdown</h4>
+                    <h4 className="font-medium leading-none text-base">On-Ground Expense Breakdown</h4>
                     <p className="text-xs text-muted-foreground">
-                      Overall Est. (from AI): ${destination.estimatedExpenses.toLocaleString()} (USD)
+                      Est. On-Ground (from AI): ${destination.estimatedExpenses.toLocaleString()} (USD)
+                    </p>
+                     <p className="text-xs text-muted-foreground">
+                      (for {numberOfTravelers || 1} traveler{numberOfTravelers === 1 ? '' : 's'})
                     </p>
                   </div>
                   <div className="grid gap-2 text-xs">
@@ -216,4 +221,3 @@ export default function DestinationCard({
     </Card>
   );
 }
-

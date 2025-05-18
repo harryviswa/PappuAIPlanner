@@ -24,7 +24,7 @@ const trendingPlaces: TrendingPlace[] = [
     name: "Kyoto, Japan",
     description: "Ancient temples, serene gardens, and vibrant culture.",
     image: "https://placehold.co/400x300.png",
-    dataAiHint: "Kyoto Japan temple",
+    dataAiHint: "Kyoto temple",
     mockTripCost: "$1800 - $2800",
     mockMinDays: "7-10 Days",
     mockPlacesToVisit: ["Kinkaku-ji (Golden Pavilion)", "Fushimi Inari-taisha Shrine", "Arashiyama Bamboo Grove", "Gion District"]
@@ -33,7 +33,7 @@ const trendingPlaces: TrendingPlace[] = [
     name: "Paris, France",
     description: "The city of lights, iconic landmarks, and art.",
     image: "https://placehold.co/400x300.png",
-    dataAiHint: "Paris France eiffel tower",
+    dataAiHint: "Paris landmark",
     mockTripCost: "$1500 - $2500",
     mockMinDays: "5-7 Days",
     mockPlacesToVisit: ["Eiffel Tower", "Louvre Museum", "Notre-Dame Cathedral", "Montmartre", "Musée d'Orsay"]
@@ -42,7 +42,7 @@ const trendingPlaces: TrendingPlace[] = [
     name: "Rome, Italy",
     description: "Historic ruins, Vatican City, and delicious cuisine.",
     image: "https://placehold.co/400x300.png",
-    dataAiHint: "Rome Italy colosseum",
+    dataAiHint: "Rome colosseum",
     mockTripCost: "$1400 - $2300",
     mockMinDays: "4-6 Days",
     mockPlacesToVisit: ["Colosseum", "Roman Forum", "Trevi Fountain", "Vatican City (St. Peter's Basilica, Vatican Museums)", "Pantheon"]
@@ -51,7 +51,7 @@ const trendingPlaces: TrendingPlace[] = [
     name: "Bali, Indonesia",
     description: "Lush rice paddies, spiritual retreats, and stunning beaches.",
     image: "https://placehold.co/400x300.png",
-    dataAiHint: "Bali Indonesia beach",
+    dataAiHint: "Bali beach",
     mockTripCost: "$1200 - $2000",
     mockMinDays: "7-14 Days",
     mockPlacesToVisit: ["Ubud (Monkey Forest, Rice Terraces)", "Tanah Lot Temple", "Seminyak Beaches", "Nusa Penida Island"]
@@ -60,7 +60,7 @@ const trendingPlaces: TrendingPlace[] = [
     name: "New York, USA",
     description: "Iconic skyline, Broadway shows, and diverse neighborhoods.",
     image: "https://placehold.co/400x300.png",
-    dataAiHint: "New York USA skyline",
+    dataAiHint: "NewYork skyline",
     mockTripCost: "$1600 - $3000",
     mockMinDays: "5-7 Days",
     mockPlacesToVisit: ["Statue of Liberty & Ellis Island", "Times Square", "Central Park", "Empire State Building", "Broadway"]
@@ -69,7 +69,7 @@ const trendingPlaces: TrendingPlace[] = [
     name: "Santorini, Greece",
     description: "Whitewashed villages, blue-domed churches, and sunsets.",
     image: "https://placehold.co/400x300.png",
-    dataAiHint: "Santorini Greece island",
+    dataAiHint: "Santorini island",
     mockTripCost: "$2000 - $3500",
     mockMinDays: "4-6 Days",
     mockPlacesToVisit: ["Oia (for sunsets)", "Fira", "Red Beach", "Akrotiri Archaeological Site", "Boat tour to volcano"]

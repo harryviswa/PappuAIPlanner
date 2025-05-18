@@ -65,15 +65,18 @@ export default function DestinationCard({
 
   const totalTripCost = destination.averageFlightPrice * (numberOfTravelers || 1) + destination.estimatedExpenses;
 
+  const countryWords = destination.country.toLowerCase().split(' ');
+  const aiHint = countryWords.slice(0, 2).join(' ');
+
   return (
     <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col md:flex-row h-full w-full">
       <div className="relative w-full md:w-1/3 h-64 md:h-auto">
         <Image
-          src={`https://placehold.co/600x400.png?text=${encodeURIComponent(destination.country)}`}
+          src="https://placehold.co/600x400.png"
           alt={`Image of ${destination.country}`}
           layout="fill"
           objectFit="cover"
-          data-ai-hint={`travel landmark ${destination.country.toLowerCase()}`}
+          data-ai-hint={aiHint}
         />
          {destination.isPremiumOption && (
           <Badge variant="default" className="absolute top-2 right-2 text-sm px-3 py-1 flex items-center gap-1 z-10 bg-primary text-primary-foreground border-primary/80">

@@ -33,7 +33,7 @@ const SuggestDestinationsOutputSchema = z.object({
       visaRequirements: z
         .string()
         .describe('Visa requirements for the nationality.'),
-      itinerary: z.string().describe('Recommended itinerary for the trip.'),
+      itinerary: z.string().describe('Recommended day-by-day itinerary in Markdown format (headings for days, bullet points for activities).'),
     })
   ),
   disclaimer: z.string().optional().describe('Disclaimer regarding data accuracy.'),
@@ -50,7 +50,7 @@ const prompt = ai.definePrompt({
   name: 'suggestDestinationsPrompt',
   input: {schema: SuggestDestinationsInputSchema},
   output: {schema: SuggestDestinationsOutputSchema},
-  prompt: `Suggest the best travel destinations based on the following criteria:\n\nTravel Dates: {{{travelDates}}}\nNationality: {{{nationality}}}\nBudget: {{{budget}}} USD\nNumber of Travelers: {{{numberOfTravelers}}}\n\nConsider visa requirements for the traveler's nationality. Return destinations with the lowest possible flight tickets in descending order. Also, create a recommended itinerary based on the travel dates given. Format output as JSON.`,
+  prompt: `Suggest the best travel destinations based on the following criteria:\n\nTravel Dates: {{{travelDates}}}\nNationality: {{{nationality}}}\nBudget: {{{budget}}} USD\nNumber of Travelers: {{{numberOfTravelers}}}\n\nConsider visa requirements for the traveler's nationality. Return destinations with the lowest possible flight tickets in descending order. Also, create a recommended day-by-day itinerary in Markdown format (headings for days, bullet points for activities) based on the travel dates given. Format output as JSON.`,
 });
 
 const suggestDestinationsFlow = ai.defineFlow(

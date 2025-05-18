@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Destination } from '@/lib/types';
@@ -30,16 +31,24 @@ export default function DestinationCard({
       <div className="relative w-full h-48">
         <Image
           src={`https://placehold.co/600x400.png?text=${encodeURIComponent(destination.country)}`}
-          alt={destination.country}
+          alt={`Image of ${destination.country}`}
           layout="fill"
           objectFit="cover"
           data-ai-hint="travel landmark"
         />
       </div>
       <CardHeader>
-        <CardTitle className="text-xl flex items-center gap-2">
-          <MapPin className="h-6 w-6 text-primary" />
-          {destination.country}
+        <CardTitle className="text-xl">
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination.country)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-primary hover:underline"
+            title={`View ${destination.country} on Google Maps`}
+          >
+            <MapPin className="h-6 w-6" />
+            {destination.country}
+          </a>
         </CardTitle>
         <CardDescription className="text-sm">
           Explore the wonders of {destination.country}.

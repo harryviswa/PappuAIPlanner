@@ -8,16 +8,17 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, Users, DollarSign, Flag, Search } from 'lucide-react';
+import { CalendarIcon, Users, DollarSign, Flag, Search, Coins } from 'lucide-react';
 import * as React from 'react';
 import type { DateRange } from 'react-day-picker';
 import { nationalities } from '@/lib/nationalities';
+import { currencies } from '@/lib/currencies';
 
 const formSchema = z.object({
   travelDates: z
@@ -55,6 +56,7 @@ const formSchema = z.object({
     ),
   nationality: z.string().min(1, { message: "Please select your nationality." }),
   budget: z.coerce.number().positive({ message: "Budget must be a positive number." }),
+  currency: z.string().min(1, { message: "Please select a currency."}),
   numberOfTravelers: z.coerce.number().int().min(1, { message: "Must be at least 1 traveler." }),
 });
 
@@ -75,22 +77,23 @@ export default function DestinationForm({ onSubmit, isLoading }: DestinationForm
       },
       nationality: '',
       budget: 1000,
-      numberOfTravelers: 2, // Default to 2 travelers
+      currency: 'USD',
+      numberOfTravelers: 2,
     },
   });
 
   const handleFormSubmit: SubmitHandler<DestinationFormValues> = (values) => {
-    // Ensure from and to dates are present, validated by Zod
     const formattedTravelDates = `${format(values.travelDates.from!, "yyyy-MM-dd")} to ${format(values.travelDates.to!, "yyyy-MM-dd")}`;
     
     onSubmit({
-      // budget and numberOfTravelers are already coerced to number by Zod
-      budget: values.budget,
+      budget: values.budget, // AI will interpret this as USD
       numberOfTravelers: values.numberOfTravelers,
       nationality: values.nationality,
       travelDates: formattedTravelDates,
     });
   };
+
+  const selectedCurrency = form.watch("currency");
 
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-xl">
@@ -140,7 +143,7 @@ export default function DestinationForm({ onSubmit, isLoading }: DestinationForm
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="range"
-                        selected={field.value as DateRange | undefined} // Cast because react-hook-form type might be generic
+                        selected={field.value as DateRange | undefined}
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date(new Date().setHours(0,0,0,0)) }
                         initialFocus
@@ -177,21 +180,51 @@ export default function DestinationForm({ onSubmit, isLoading }: DestinationForm
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FormField
                 control={form.control}
                 name="budget"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-1"><DollarSign className="h-4 w-4 text-muted-foreground"/>Budget (USD)</FormLabel>
+                  <FormItem className="md:col-span-2">
+                    <FormLabel className="flex items-center gap-1"><DollarSign className="h-4 w-4 text-muted-foreground"/>Budget</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="e.g., 2000" {...field} step="500" />
+                      <Input type="number" placeholder="e.g., 1000" {...field} step="500" />
                     </FormControl>
+                     {selectedCurrency !== 'USD' && (
+                      <FormDescription className="text-xs text-accent-foreground/70 pt-1">
+                        Note: AI processing uses USD for budget and expense estimations.
+                      </FormDescription>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
+               <FormField
+                control={form.control}
+                name="currency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-1"><Coins className="h-4 w-4 text-muted-foreground"/>Currency</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select currency" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {currencies.map((curr) => (
+                          <SelectItem key={curr.value} value={curr.value}>
+                            {curr.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+             <FormField
                 control={form.control}
                 name="numberOfTravelers"
                 render={({ field }) => (
@@ -204,7 +237,6 @@ export default function DestinationForm({ onSubmit, isLoading }: DestinationForm
                   </FormItem>
                 )}
               />
-            </div>
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full" disabled={isLoading}>

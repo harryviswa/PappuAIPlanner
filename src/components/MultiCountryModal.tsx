@@ -68,9 +68,16 @@ export default function MultiCountryModal({
     return selectedCountries.reduce((sum, dest) => sum + dest.estimatedExpenses, 0);
   }, [selectedCountries]);
 
+  // Basic styling for table elements if not covered by prose
+  const tableStyles = `
+    .itinerary-table-multi table { table-layout: auto; width: 100%; border-collapse: collapse; }
+    .itinerary-table-multi th, .itinerary-table-multi td { border: 1px solid hsl(var(--border)); padding: 0.5rem; text-align: left; }
+    .itinerary-table-multi th { background-color: hsl(var(--muted)); }
+  `;
+
   return (
     <Dialog open={isOpen} onOpenChange={handleModalClose}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] flex flex-col">
         {!viewingItineraries ? (
           <>
             <DialogHeader>
@@ -124,6 +131,7 @@ export default function MultiCountryModal({
               </div>
             </DialogHeader>
             <ScrollArea className="flex-grow pr-2 -mr-2 max-h-[60vh]">
+              <style>{tableStyles}</style>
               <Accordion type="multiple" className="w-full">
                 {selectedCountries.map(dest => (
                   <AccordionItem value={dest.country} key={dest.country}>
@@ -131,9 +139,10 @@ export default function MultiCountryModal({
                       <span className="flex items-center gap-2 text-lg"><MapPin className="h-5 w-5 text-primary" />{dest.country}</span>
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-wrap p-2 bg-muted/30 rounded-md">
-                        {dest.itinerary || "No detailed itinerary provided."}
-                      </div>
+                      <div 
+                        className="prose prose-sm max-w-none dark:prose-invert p-2 itinerary-table-multi"
+                        dangerouslySetInnerHTML={{ __html: dest.itinerary || "<p>No detailed itinerary provided.</p>" }}
+                      />
                     </AccordionContent>
                   </AccordionItem>
                 ))}

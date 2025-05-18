@@ -1,6 +1,4 @@
 
-// This file is machine-generated - edit with care!
-
 'use server';
 /**
  * @fileOverview An AI agent to generate a travel itinerary based on destination and travel dates.
@@ -21,7 +19,7 @@ const GenerateItineraryInputSchema = z.object({
 export type GenerateItineraryInput = z.infer<typeof GenerateItineraryInputSchema>;
 
 const GenerateItineraryOutputSchema = z.object({
-  itinerary: z.string().describe('A detailed day-by-day itinerary for the travel destination.'),
+  itinerary: z.string().describe('A detailed day-by-day itinerary for the travel destination, formatted as a well-formed HTML table. The table should have columns: "Day", "Morning Activity", "Afternoon Activity", "Evening Activity", and "Notes". Use basic HTML tags (<table>, <thead>, <tbody>, <tr>, <th>, <td>). Do not include CSS styles.'),
 });
 export type GenerateItineraryOutput = z.infer<typeof GenerateItineraryOutputSchema>;
 
@@ -43,7 +41,39 @@ Interests: {{{interests}}}
 Consider these interests when creating the itinerary.
 {{/if}}
 
-Format the itinerary in markdown, with each day as a heading, and activities as bullet points. Include estimated times for each activity.
+Format the itinerary as a well-formed HTML table.
+The table should have columns: "Day", "Morning Activity", "Afternoon Activity", "Evening Activity", and "Notes".
+Use only basic HTML tags like <table>, <thead>, <tbody>, <tr>, <th>, and <td>.
+Do not include any CSS styles or attributes like <style> tags or inline styles.
+Ensure the HTML is valid.
+For example:
+<table>
+  <thead>
+    <tr>
+      <th>Day</th>
+      <th>Morning Activity</th>
+      <th>Afternoon Activity</th>
+      <th>Evening Activity</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Day 1</td>
+      <td>Explore the city center.</td>
+      <td>Lunch at a local cafe.</td>
+      <td>Visit the museum.</td>
+      <td>Museum tickets can be bought online.</td>
+    </tr>
+    <tr>
+      <td>Day 2</td>
+      <td>Hike to the viewpoint.</td>
+      <td>Picnic lunch.</td>
+      <td>Relax by the lake.</td>
+      <td>Wear comfortable shoes for the hike.</td>
+    </tr>
+  </tbody>
+</table>
 `,
 });
 
@@ -58,4 +88,3 @@ const generateItineraryFlow = ai.defineFlow(
     return output!;
   }
 );
-

@@ -84,12 +84,14 @@ For each destination (both primary and premium):
 5. Create a recommended day-by-day 'itinerary', formatted as a well-formed HTML table. The table should have columns: "Day", "Morning Activity", "Afternoon Activity", "Evening Activity", and "Notes". Use basic HTML tags like <table>, <thead>, <tbody>, <tr>, <th>, and <td>. Do not include any CSS styles within the HTML.
 6. If possible, provide a 'detailedExpenses' object with numeric estimates in USD for 'food', 'stay' (accommodation), 'sightseeing', 'shopping', and 'transport' (local). These are on-ground costs.
    **VERY IMPORTANT**: If 'detailedExpenses' is provided, ensure its sum accurately reflects the 'estimatedExpenses' (on-ground costs). If they cannot be perfectly aligned, prioritize the accuracy of 'estimatedExpenses' as the overall on-ground cost, and make the sum of detailedExpenses match it.
-7. Set 'isPremiumOption' appropriately.
+7. Set 'isPremiumOption' to false for primary suggestions and true for premium suggestions. This field MUST always be present for every destination.
 
 Additionally, provide 1-2 'Premium' or 'Splurge' destination options. These should be for travelers willing to spend roughly 25-50% more than their stated 'budget' (which is in USD) for a significantly enhanced experience or luxury. For these premium options:
 - Follow points 1-7 above (all monetary values in USD).
 - Set 'isPremiumOption' to true.
 - These premium options should be listed AFTER the primary suggestions in the final output array.
+
+**CRITICAL**: For every destination object in the \`destinations\` array, you MUST provide all the required fields as defined: \`country\`, \`averageFlightPrice\`, \`estimatedExpenses\`, \`visaRequirements\`, and \`itinerary\`. The field \`isPremiumOption\` must also always be provided. The \`detailedExpenses\` field is optional but preferred if data is available.
 
 If estimations are highly variable or based on limited data (e.g., flight and accommodation prices are highly dynamic), OR if visa information is generalized, provide a brief 'disclaimer' string such as "All prices are estimates in USD and subject to change. Visa information is AI-generated and should be verified with official sources."
 

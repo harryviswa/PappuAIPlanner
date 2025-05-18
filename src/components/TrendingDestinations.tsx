@@ -5,6 +5,7 @@ import Image from 'next/image';
 import type { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { TrendingUp } from 'lucide-react'; // Using Lucide icon
 
 interface TrendingPlace {
   name: string;
@@ -54,9 +55,9 @@ const trendingPlaces: TrendingPlace[] = [
 
 export default function TrendingDestinations() {
   return (
-    <div className="w-full lg:w-1/3 lg:max-w-lg mt-8 lg:mt-0">
+    <div className="w-full"> {/* Changed to full width */}
       <h2 className="text-2xl font-semibold mb-4 text-primary flex items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-6 w-6"><path d="m3.5 2 2.1 4.1c.1.2.2.4.2.6V17a2 2 0 0 0 .9 1.7l2.1 1.1a2 2 0 0 0 2.1 0l2.1-1.1A2 2 0 0 0 14 17V6.7c0-.2.1-.4.2-.6L18.5 2"/><path d="M10 12h4"/><path d="M12 10v4"/><path d="M4.5 5h13"/></svg>
+        <TrendingUp className="mr-2 h-6 w-6"/> {/* Replaced SVG with Lucide icon */}
         Trending This Month
       </h2>
       <ScrollArea className="whitespace-nowrap rounded-lg border shadow-sm bg-card">

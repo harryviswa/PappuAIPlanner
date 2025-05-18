@@ -67,7 +67,9 @@ Nationality: {{{nationality}}}
 Budget: {{{budget}}} USD
 Number of Travelers: {{{numberOfTravelers}}}
 
-Consider visa requirements for the traveler's nationality. Return primary destinations within or very close to the budget, with the lowest possible flight tickets, sorted by flight price (ascending).
+Consider visa requirements for the traveler's nationality. Prioritize destinations known for their unique attractions, positive traveler reviews, and overall appeal for the given criteria. Consider both popular hotspots and hidden gems if they align with the user's input.
+Return primary destinations within or very close to the budget, with the lowest possible flight tickets, sorted by flight price (ascending).
+
 For each destination:
 1. Provide a 'country' name.
 2. Provide 'averageFlightPrice' in USD (numeric).
@@ -83,7 +85,7 @@ Additionally, provide 1-2 'Premium' or 'Splurge' destination options. These shou
 - Set 'isPremiumOption' to true.
 - These premium options should be listed AFTER the primary suggestions.
 
-If estimations are highly variable or based on limited data (e.g., flight and accommodation prices are highly dynamic), provide a brief 'disclaimer' string.
+If estimations are highly variable or based on limited data (e.g., flight and accommodation prices are highly dynamic), provide a brief 'disclaimer' string such as "All prices are estimates and subject to change. Detailed expense breakdown might not perfectly sum to total estimated expenses due to rounding or dynamic pricing."
 
 Format output as JSON.`,
 });
@@ -99,3 +101,4 @@ const suggestDestinationsFlow = ai.defineFlow(
     return output!;
   }
 );
+

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { SuggestDestinationsFormInput, Destination, SuggestedDestinationsOutput as AISuggestedDestinationsOutput } from '@/lib/types';
 import { suggestDestinations } from '@/ai/flows/suggest-destinations';
 import DestinationForm from '@/components/DestinationForm';
@@ -12,14 +12,16 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import TrendingDestinations from '@/components/TrendingDestinations';
-import { Terminal, Layers, Info, Star } from "lucide-react";
+import { Terminal, Layers, Info, Star, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { travelFacts } from '@/lib/travel-facts';
 
 export default function HomePage() {
   const [allDestinations, setAllDestinations] = useState<Destination[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [disclaimer, setDisclaimer] = useState<string | null>(null);
+  const [displayedFact, setDisplayedFact] = useState<string | null>(null);
 
   const [selectedItineraryDest, setSelectedItineraryDest] = useState<Destination | null>(null);
   const [isItineraryModalOpen, setIsItineraryModalOpen] = useState(false);
@@ -29,6 +31,15 @@ export default function HomePage() {
   const [formNumberOfTravelers, setFormNumberOfTravelers] = useState<number | undefined>();
 
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (isLoading) {
+      const randomIndex = Math.floor(Math.random() * travelFacts.length);
+      setDisplayedFact(travelFacts[randomIndex]);
+    } else {
+      setDisplayedFact(null); // Clear fact when not loading
+    }
+  }, [isLoading]);
 
   const handleFormSubmit = async (data: SuggestDestinationsFormInput) => {
     setIsLoading(true);
@@ -101,19 +112,27 @@ export default function HomePage() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 mb-12">
-        <div className="lg:flex-1 lg:max-w-3xl"> {/* Form takes up more space, limited max width */}
-          <DestinationForm onSubmit={handleFormSubmit} isLoading={isLoading} />
-        </div>
-        <aside className="lg:w-auto lg:flex-shrink-0"> {/* Trending destinations section */}
-          <TrendingDestinations />
-        </aside>
+      <div className="mb-12">
+        <TrendingDestinations />
+      </div>
+      
+      <div className="mb-12">
+        <DestinationForm onSubmit={handleFormSubmit} isLoading={isLoading} />
       </div>
 
       {isLoading && (
         <div className="text-center py-10">
           <LoadingSpinner size={48} />
           <p className="mt-4 text-lg text-muted-foreground">Finding your perfect trip...</p>
+          {displayedFact && (
+            <div className="mt-6 max-w-md mx-auto p-4 bg-accent/10 border border-accent/30 rounded-lg shadow-sm">
+              <div className="flex items-center text-accent mb-2">
+                <Lightbulb className="h-5 w-5 mr-2" />
+                <h3 className="font-semibold text-sm">Did you know?</h3>
+              </div>
+              <p className="text-sm text-accent-foreground/80">{displayedFact}</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -125,7 +144,7 @@ export default function HomePage() {
          </Alert>
       )}
       
-      <div className="space-y-12"> {/* Wrapper for results to give them space from form/trending */}
+      <div className="space-y-12">
         {!isLoading && !error && allDestinations.length > 0 && (
           <>
             <section className="space-y-6">
@@ -155,7 +174,7 @@ export default function HomePage() {
                   numberOfTravelers={formNumberOfTravelers}
                 />
               ) : (
-                !premiumSuggestions.length && // Only show this if there are no premium suggestions either
+                !premiumSuggestions.length && 
                 <p className="text-center text-muted-foreground">No primary destinations matched your criteria.</p>
               )}
             </section>
